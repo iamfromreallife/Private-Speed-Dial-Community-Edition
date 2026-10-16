@@ -1,4 +1,4 @@
-Another Chrome (and related) "Speed Dial Extension"
+Another Chrome (and related browsers) "Speed Dial Extension"
 
 Changes included:
 - Interface and accessibility localized into European Portuguese.
