@@ -4,14 +4,7 @@ An open-source new-tab page with a customizable shortcut grid, clock and date, s
 
 ## Community Edition scope
 
-Private Speed Dial CE contains no Pro licensing whatsoever. Pro features are not available in this version:
-
--  Settings exporting and importing
--  Import dials from a browser bookmarks folder
--  Dark theme
--  Pre-included background images
--  Choosing a background from a user's PC
--  Preset layouts
+Private Speed Dial CE contains no Pro licensing, payment, subscription, or ExtensionPay integration. Pro-only wallpaper galleries and bundled wallpaper images are not included. The page background colour selector remains available.
 
 ## Install locally
 
@@ -22,5 +15,8 @@ Private Speed Dial CE contains no Pro licensing whatsoever. Pro features are not
 
 ## Privacy
 
-The extension stores its settings and shortcuts locally in the browser. It does not include ExtensionPay or payment-related code. Thumbnail capture use the relevant browser/network capabilities when those features are used.
-Absolutely no data collection by this extension.
+The extension stores its settings and shortcuts locally in the browser. It does not include ExtensionPay or payment-related code. Google search suggestions and thumbnail capture use the relevant browser/network capabilities when those features are used.
+
+## Contributing
+
+Issues and pull requests are welcome. Please include reproduction steps for bugs and describe the browser/version tested.

@@ -2019,18 +2019,16 @@ function setupSettingsTabs() {
   const searchbar = afterSearch.find(el => el.matches('.searchbar-settings'));
   const background = afterSearch.find(el => el.matches('.theme-section'));
   const entry = afterSearch.find(el => el.matches('.animation-duration-settings'));
-  // Identify the grid-layout section by stable translation keys first, then by
-  // its accessible label/heading. The previous Portuguese-only text match could
-  // fail in other interface languages, causing the grid section to be appended
-  // as a leftover after Dial appearance.
-  const grid = [...afterSearch, ...beforeSearch].find(el => el.matches('.dial-settings') && (
-    el.dataset.i18n === 'Dial grid layout' ||
-    el.getAttribute('aria-label') === 'Layout da grelha de dials' ||
-    el.getAttribute('aria-label') === 'Dial grid layout' ||
-    el.querySelector('.settings-heading')?.dataset.i18n === 'Dial grid layout' ||
-    /^(Dial grid layout|Layout da grelha de dials|Grid layout)$/i.test(el.querySelector('.settings-heading')?.textContent?.trim() || '')
+  // Find settings sections through stable identifiers, not translated labels.
+  // locales.js translates aria-labels/headings; those are presentation text and must
+  // never be used to decide whether a section belongs in the tab layout.
+  const directChildren = Array.from(panel.children);
+  const grid = directChildren.find(el => el.matches('.dial-settings') && (
+    el.dataset.settingsSection === 'grid' || !!el.querySelector('#dial-columns')
   ));
-  const appearance = afterSearch.find(el => el.matches('.dial-settings') && (el.getAttribute('aria-label') === 'Aparência dos dials' || el.getAttribute('aria-label') === 'Dial appearance' || el.querySelector('.settings-heading')?.textContent?.includes('Aparência dos dials') || el.querySelector('.settings-heading')?.dataset.i18n === 'Dial appearance')) || Array.from(panel.children).find(el => el.matches('.dial-settings') && (el.getAttribute('aria-label') === 'Aparência dos dials' || el.getAttribute('aria-label') === 'Dial appearance' || el.querySelector('.settings-heading')?.dataset.i18n === 'Dial appearance'));
+  const appearance = directChildren.find(el => el.matches('.dial-settings') && (
+    el.dataset.settingsSection === 'appearance' || !!el.querySelector('#dial-shape')
+  ));
   const clock = afterSearch.find(el => el.matches('.clock-settings'));
   const button = afterSearch.find(el => el.matches('.button-settings'));
   const separators = afterSearch.filter(el => el.matches('.separator-settings'));
@@ -2082,34 +2080,22 @@ function setupSettingsTabs() {
     languageTop.removeAttribute('style');
     nav.appendChild(languageTop);
   }
-  // Size the sidebar and popup from the widest translated tab title, so labels
-  // remain on one line after language changes without making the popup wider
-  // than the available viewport.
+  // Stable viewport-bounded layout: do not size the drawer from translated text.
+  // Measuring labels and mutating width on translation changes caused overflow and
+  // made the sidebar and content columns disagree in Spanish/French/German.
   const resizeSettingsForTabLabels = () => {
-    const labels = Array.from(nav.querySelectorAll('.settings-tab-label'));
-    if (!labels.length) return;
-    labels.forEach(label => { label.style.whiteSpace = 'nowrap'; });
-    const longest = Math.max(0, ...labels.map(label => {
-      const range = document.createRange();
-      range.selectNodeContents(label);
-      return Math.ceil(Math.max(label.scrollWidth, range.getBoundingClientRect().width));
-    }));
-    // Widen the tab sidebar by 100px and let the active settings column
-    // use the remaining popup width. Keep extra popup growth only when a
-    // translated title exceeds the widened sidebar's available label width.
-    const navWidth = Math.max(176, longest + 17 + 8 + 16 + 2);
-    const panelWidth = 592 + Math.max(0, navWidth - 176);
+    const viewportWidth = Math.max(320, document.documentElement.clientWidth || window.innerWidth || 320);
+    const drawerWidth = Math.min(800, Math.max(340, viewportWidth - 28));
+    const navWidth = Math.min(230, Math.max(160, Math.floor(drawerWidth * 0.27)));
     panel.style.setProperty('--settings-nav-width', `${navWidth}px`);
-    panel.style.setProperty('--settings-panel-width', `${panelWidth}px`);
+    panel.style.setProperty('--settings-panel-width', `${drawerWidth}px`);
+    panel.style.setProperty('--settings-drawer-inner-width', `${Math.max(280, drawerWidth - 28)}px`);
   };
   resizeSettingsForTabLabels();
   if (!nav.dataset.dynamicWidthObserver) {
     nav.dataset.dynamicWidthObserver = 'true';
-    const labelObserver = new MutationObserver(() => requestAnimationFrame(resizeSettingsForTabLabels));
-    labelObserver.observe(nav, {subtree:true, childList:true, characterData:true});
     document.getElementById('language-select')?.addEventListener('change', () => {
-      setTimeout(resizeSettingsForTabLabels, 0);
-      setTimeout(resizeSettingsForTabLabels, 80);
+      requestAnimationFrame(resizeSettingsForTabLabels);
     });
     window.addEventListener('resize', resizeSettingsForTabLabels);
   }
