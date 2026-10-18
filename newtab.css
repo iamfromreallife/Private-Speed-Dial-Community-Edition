@@ -1,0 +1,2109 @@
+/* ===== CSS Custom Properties (Theme Variables) ===== */
+:root {
+  --bg-color: #ffffff;
+  --bg-image: none;
+  --text-color: #1d1d1f;
+  --text-secondary: #68686d;
+  --search-bg: #fff;
+  --search-text: #1d1d1f;
+  --search-placeholder: #86868b;
+  --search-border: #d2d2d7;
+  --card-bg: #ffffff;
+  --card-bg-hover: #f0f0f4;
+  --card-border: #d2d2d7;
+  --accent: #4a90d9;
+  --accent-hover: #3d7cc0;
+  --overlay-opacity: 0;
+  --text-shadow: none;
+  --hover-bg: rgba(0,0,0,0.06);
+  --hover-bg-active: rgba(0,0,0,0.1);
+  --glow-color: #9b5de5;
+  --glow-opacity: 0.10;
+  --glow-enabled-opacity: 1;
+  --vignette-color: #000000;
+  --vignette-opacity: 0;
+  --vignette-size: 45%;
+}
+
+/* Dedicated background surface for user-selected images. Keep it behind all page UI. */
+#page-background-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--bg-color, #ffffff);
+  background-image: var(--bg-image, none);
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+  background-image: none;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-color);
+}
+
+body::before {
+  animation: none !important;
+  opacity: 1 !important;
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% var(--glow-position, 50%), color-mix(in srgb, var(--glow-color) calc(var(--glow-opacity) * var(--glow-enabled-opacity, 1) * 100%), transparent) 0%, transparent var(--glow-size, 58%));
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: var(--vignette-opacity, 0);
+  background: radial-gradient(ellipse at center, transparent 0%, transparent calc(100% - var(--vignette-size, 45%)), var(--vignette-color, #000000) 100%);
+  animation: none !important;
+}
+
+#bg-overlay {
+  animation: none !important;
+  opacity: 1 !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, var(--overlay-opacity));
+  pointer-events: none;
+  z-index: 0;
+  transition: background 0.3s;
+}
+
+.container {
+  text-align: center;
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px 0;
+  position: relative;
+  transform: none !important;
+  z-index: 1;
+}
+
+/* ===== Clock Widget ===== */
+.clock-widget {
+  margin-bottom: 24px;
+  visibility: visible;
+  transform: translate(0, 0) !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#page-content {
+  position: relative;
+  z-index: 1;
+  opacity: 1;
+}
+body:not(.preferences-ready) #page-content { opacity: 0; }
+body.preferences-ready #page-content.page-entering.fade-in-enabled {
+  animation-name: page-block-fade-in !important;
+  animation-duration: var(--dial-entry-duration, 125ms) !important;
+  animation-timing-function: ease-out !important;
+  animation-fill-mode: both !important;
+}
+body.preferences-ready #page-content.page-entering.phone-animation-enabled {
+  animation-name: page-block-phone-zoom !important;
+  animation-duration: var(--dial-phone-duration, 350ms) !important;
+  animation-timing-function: cubic-bezier(.2,.8,.2,1) !important;
+  animation-fill-mode: both !important;
+}
+body.preferences-ready #page-content.page-entering.fade-in-enabled.phone-animation-enabled {
+  animation-name: page-block-fade-in, page-block-phone-zoom !important;
+  animation-duration: var(--dial-entry-duration, 125ms), var(--dial-phone-duration, 350ms) !important;
+  animation-timing-function: ease-out, cubic-bezier(.2,.8,.2,1) !important;
+  animation-fill-mode: both, both !important;
+}
+@keyframes page-block-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes page-block-phone-zoom {
+  0% { transform: scale(.72); }
+  100% { transform: scale(1); }
+}
+.animation-choice-row { display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:38px; width:100%; }
+.animation-choice-row > label:first-child { cursor:pointer; font-weight:600; margin-right:auto; text-align:left; }
+.animation-choice-row > .visibility-option { flex:0 0 auto; }
+.animations-separator { height:1px; background:var(--border-color, #d8dee8); margin:8px 0; width:100%; }
+
+.clock-time {
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+  caret-color: transparent;
+  font-size: 82px;
+  font-weight: 300;
+  color: var(--text-color);
+  text-shadow: var(--text-shadow);
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.clock-dial-separator {
+  width: min(72%, 680px);
+  height: var(--clock-dial-separator-thickness, 2px);
+  margin: 0 auto 24px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent 0%, var(--clock-dial-separator-color, #8b8b95) 18%, var(--clock-dial-separator-color, #8b8b95) 82%, transparent 100%);
+  opacity: var(--clock-dial-separator-opacity, .55) !important;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--clock-dial-separator-color, #8b8b95) 35%, transparent);
+  pointer-events: none;
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+  caret-color: transparent;
+  animation: none !important;
+  transition: none !important;
+}
+
+.dial-button-separator {
+  margin: 24px auto;
+  animation: none !important;
+  opacity: var(--clock-dial-separator-opacity, .55) !important;
+  transition: none !important;
+}
+
+body:not(.preferences-ready) .clock-dial-separator,
+body:not(.preferences-ready) .dial-button-separator {
+  visibility: hidden !important;
+}
+body.preferences-ready .clock-dial-separator,
+body.preferences-ready .dial-button-separator {
+  visibility: visible !important;
+}
+
+.clock-date {
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+  caret-color: transparent;
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  text-shadow: var(--text-shadow);
+  margin-top: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Grelha de atalhos ===== */
+.shortcuts {
+  display: grid;
+  grid-template-columns: repeat(var(--dial-columns, 5), minmax(calc(var(--dial-icon-size, 64px) + 8px), 1fr));
+  grid-template-rows: repeat(var(--dial-rows, 2), minmax(calc(var(--dial-icon-size, 64px) + var(--dial-title-size, 12px) * 1.2 + var(--dial-title-gap, 0px) + 8px), 1fr));
+  justify-content: stretch;
+  align-items: center !important;
+  justify-items: center !important;
+  gap: 0;
+  --dial-icon-size: 64px;
+  --dial-icon-width: 64px;
+  --dial-corner-radius: 50%;
+  --dial-shadow-blur: 12px;
+  width: var(--dial-grid-width, 800px);
+  min-width: var(--dial-grid-width, 800px);
+  max-width: none;
+  height: var(--dial-grid-height, 400px);
+  margin: 0 auto 20px;
+  position: relative;
+  isolation: isolate;
+}
+
+.shortcuts::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background-image:
+    repeating-linear-gradient(to right, transparent 0, transparent calc((var(--dial-grid-width, 800px) / var(--dial-columns, 5)) - 1px), rgba(110, 110, 115, var(--dial-grid-lines-opacity, 0)) calc((var(--dial-grid-width, 800px) / var(--dial-columns, 5)) - 1px), rgba(110, 110, 115, var(--dial-grid-lines-opacity, 0)) calc(var(--dial-grid-width, 800px) / var(--dial-columns, 5))),
+    repeating-linear-gradient(to bottom, transparent 0, transparent calc((var(--dial-grid-height, 400px) / var(--dial-rows, 2)) - 1px), rgba(110, 110, 115, var(--dial-grid-lines-opacity, 0)) calc((var(--dial-grid-height, 400px) / var(--dial-rows, 2)) - 1px), rgba(110, 110, 115, var(--dial-grid-lines-opacity, 0)) calc(var(--dial-grid-height, 400px) / var(--dial-rows, 2)));
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%), linear-gradient(to bottom, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  mask-composite: intersect;
+}
+
+.shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 4px;
+  box-sizing: border-box;
+  text-align: center;
+  cursor: pointer !important;
+  position: relative;
+  z-index: 0;
+  border: 0;
+  user-select: none;
+}
+
+.shortcut,
+.shortcut > *,
+.shortcut img,
+.shortcut span { cursor: pointer !important; }
+
+.shortcut .dial-icon-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 var(--dial-icon-size, 64px);
+  width: var(--dial-icon-size, 64px);
+  height: var(--dial-icon-size, 64px);
+  box-sizing: border-box;
+  border-radius: var(--dial-corner-radius, 0%);
+  overflow: hidden;
+  background: var(--dial-background-color, #fff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: var(--dial-border-thickness, 0px) solid var(--dial-border-color, rgba(139, 139, 149, 1));
+  position: relative;
+  z-index: 1;
+}
+
+.shortcut img {
+  display: block;
+  flex: 1 1 auto;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+  border-radius: var(--favicon-corner-radius, 0%);
+  overflow: hidden;
+  background-color: transparent;
+  padding: 8px;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  position: relative;
+  z-index: 1;
+}
+.shortcut .menu {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: transparent;
+  border-radius: 10px;
+  width: 1px;
+  height: 1px;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.shortcut .menu.active { display: block; }
+
+.shortcut .menu-options {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  border: 1px solid #e0e3eb;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16), 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+  min-width: 0;
+  width: max-content;
+  max-width: min(560px, calc(100vw - 16px));
+  white-space: normal;
+  z-index: 2000;
+  font-family: "Segoe UI", Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.shortcut .menu.active + .menu-options { display: block; }
+
+.shortcut .menu-options div {
+  padding: 10px 16px;
+  white-space: nowrap;
+  color: #1f1f1f;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.shortcut .menu-options div:hover { background-color: #f0f4f9; }
+
+.shortcut span {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: var(--dial-title-gap, 0px) auto 0;
+  font-size: var(--dial-title-size, 12px);
+  line-height: 1.2;
+  font-family: var(--dial-title-font-family, inherit);
+  color: var(--dial-title-color, var(--text-color));
+  text-shadow: var(--text-shadow);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  z-index: 1;
+}
+
+.shortcut::before { content: none !important; display: none !important; }
+
+.shortcut.add {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.shortcut.add .add-icon {
+  width: var(--dial-icon-size, 64px);
+  height: var(--dial-icon-size, 64px);
+  box-sizing: border-box;
+  flex: 0 0 var(--dial-icon-size, 64px);
+  border-radius: var(--dial-corner-radius, 50%);
+  background: var(--dial-background-color, #fff);
+  border: 1px solid rgba(218,220,224,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+.shortcut.add .add-icon .plus {
+  width: 22px;
+  height: 22px;
+}
+
+#shortcuts-container > .shortcut {
+  align-self: center !important;
+  justify-self: center !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#shortcuts-container > .shortcut img,
+#shortcuts-container > .shortcut > .add-icon { display: flex; flex: 0 0 var(--dial-icon-size, 64px); margin: 0; }
+#shortcuts-container > .shortcut img { display: block; }
+
+#shortcuts-container img,
+.dial-drag-preview img {
+  -webkit-user-drag: none !important;
+  user-select: none !important;
+}
+#shortcuts-container > .shortcut > span { margin-top: var(--dial-title-gap, 0px); }
+
+#shortcuts-container > .shortcut > img.icon-loading {
+  opacity: 0 !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+#shortcuts-container > .shortcut > img:not(.icon-loading) {
+  opacity: 1;
+}
+
+/* Glow exterior aplicado à moldura do dial, nunca ao favicon interior. */
+#shortcuts-container > .shortcut > .dial-icon-frame {
+  box-shadow: 0 0 var(--dial-icon-glow-size, 8px)
+    color-mix(in srgb, var(--dial-icon-glow-color, #9b5de5) calc(var(--dial-icon-glow-opacity, .45) * 100%), transparent),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+}
+#shortcuts-container > .shortcut.add > .add-icon {
+  filter: none !important;
+  box-shadow: 0 0 var(--dial-icon-glow-size, 8px)
+    color-mix(in srgb, var(--dial-icon-glow-color, #9b5de5) calc(var(--dial-icon-glow-opacity, .45) * 100%), transparent);
+}
+#shortcuts-container > .shortcut:not(.is-repositioning),
+#shortcuts-container > .shortcut:not(.is-repositioning):hover,
+#shortcuts-container > .shortcut:not(.is-repositioning):focus,
+#shortcuts-container > .shortcut:not(.is-repositioning):focus-within,
+#shortcuts-container > .shortcut:not(.is-repositioning):active,
+#shortcuts-container > .shortcut:not(.is-repositioning):active:not(.is-dragging) {
+  transform: none !important;
+  translate: none !important;
+  scale: none !important;
+  transition: none !important;
+  animation: none !important;
+  filter: none !important;
+}
+#shortcuts-container > .shortcut:hover,
+#shortcuts-container > .shortcut:focus-within,
+#shortcuts-container > .shortcut:active:not(.is-dragging) {
+  z-index: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  outline: none !important;
+}
+#shortcuts-container .dial-icon-frame > img:not(.icon-loading):not(.dial-press-anim) {
+  transition: opacity 200ms ease, filter 200ms ease !important;
+  filter: none !important;
+}
+#shortcuts-container > .shortcut:not(.is-dragging) .dial-icon-frame > img.dial-press-anim {
+  opacity: 1 !important;
+  filter: brightness(1.5) saturate(0) !important;
+  transition: filter 200ms ease, opacity 200ms ease !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+#shortcuts-container > .shortcut:not(.is-dragging):active .dial-icon-frame {
+  box-shadow: 0 0 var(--dial-icon-glow-size, 8px)
+    color-mix(in srgb, var(--dial-icon-glow-color, #9b5de5) calc(var(--dial-icon-click-glow-opacity, .54) * 100%), transparent),
+    0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Limite aplicado à moldura exterior do dial; o favicon conserva o seu próprio recorte. */
+#shortcuts-container > .shortcut > .dial-icon-frame {
+  border: var(--dial-border-thickness, 0px) solid var(--dial-border-color, rgba(139, 139, 149, 1)) !important;
+  box-sizing: border-box;
+}
+#shortcuts-container > .shortcut.add > .add-icon {
+  border: var(--dial-border-thickness, 0px) solid var(--dial-border-color, rgba(139, 139, 149, 1)) !important;
+  box-sizing: border-box;
+}
+
+#shortcuts-container.dials-entering > .shortcut,
+#shortcuts-container.dials-entering > .shortcut:hover,
+#shortcuts-container.dials-entering > .shortcut:focus-within {
+  animation: none !important;
+}
+
+#shortcuts-container > .shortcut.is-dragging {
+  opacity: 0 !important;
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+}
+#shortcuts-container > .shortcut.is-repositioning {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+body.dial-drag-active,
+body.dial-drag-active * {
+  cursor: pointer !important;
+}
+
+.dial-drag-preview {
+  animation: none !important;
+  opacity: 1 !important;
+  box-sizing: border-box;
+  border-radius: 14px;
+  background: var(--dial-bg, rgba(255,255,255,.96));
+  box-shadow: 0 18px 34px rgba(0,0,0,.24);
+  filter: drop-shadow(0 8px 12px rgba(0,0,0,.12));
+  transform: scale(1.07);
+  transform-origin: center;
+  overflow: visible;
+  will-change: transform;
+  cursor: pointer !important;
+}
+.dial-drag-preview * {
+  animation: none !important;
+  cursor: pointer !important;
+}
+.dial-drag-preview .menu,
+.dial-drag-preview .menu-options { display: none !important; }
+
+/* Menu de contexto Material Design 3 na camada superior */
+.menu-options.is-top-layer {
+  display: block !important;
+  position: fixed !important;
+  transform: none !important;
+  z-index: 2147483647 !important;
+  min-width: 0;
+  max-width: min(560px, calc(100vw - 16px));
+  width: max-content;
+  box-sizing: border-box;
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
+  padding: 6px 0;
+  background: #ffffff !important;
+  color: #1f1f1f !important;
+  border: 1px solid #e0e3eb !important;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18), 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+  border-radius: 14px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  text-align: left !important;
+  isolation: isolate;
+}
+.menu-options.is-top-layer .option {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 18px !important;
+  margin: 0;
+  text-align: left !important;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+.menu-options,
+.menu-options *,
+.menu-options.is-top-layer,
+.menu-options.is-top-layer * {
+  cursor: default !important;
+  caret-color: transparent !important;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.menu-options .option,
+.menu-options.is-top-layer .option {
+  cursor: default !important;
+  transition: background-color 120ms ease;
+}
+.menu-options .option:hover,
+.menu-options.is-top-layer .option:hover {
+  background-color: #edf3fe !important;
+}
+
+/* ===== Botão Personalizar ===== */
+.customize-btn {
+  user-select: none;
+  -webkit-user-select: none;
+  caret-color: transparent;
+  position: static !important;
+  display: flex;
+  width: var(--customize-button-width, 120px);
+  height: var(--customize-button-height, 40px);
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0 12px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1;
+  margin: 18px auto 0;
+  border-radius: 999px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text-color);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  z-index: 10 !important;
+}
+
+.customize-btn:hover {
+  background: var(--card-bg-hover);
+}
+
+#customize-btn {
+  opacity: 1;
+  box-shadow: var(--button-glow-shadow, none);
+  transition: background-color .15s ease, color .15s ease, box-shadow .15s ease !important;
+  transform: translateY(var(--button-vertical-offset, 0px));
+}
+
+body.settings-open #shortcuts-container,
+body.settings-open .clock-widget,
+body.settings-open #customize-btn {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+/* ===== Modal Styles (Material Design 3 Dialog) ===== */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 5000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.hidden { display: none !important; }
+
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 28px;
+  padding: 24px;
+  width: 360px;
+  box-shadow: 0 20px 44px rgba(15, 23, 42, 0.24), 0 4px 12px rgba(15, 23, 42, 0.1);
+  color: #1f1f1f;
+  font-family: "Segoe UI", Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.modal-content h2 {
+  margin: 0 0 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f1f1f;
+  letter-spacing: -0.01em;
+}
+
+.modal-field { margin-bottom: 16px; text-align: left; }
+
+.modal-field label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #444746;
+  margin-bottom: 6px;
+}
+
+.modal-field input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #c4c7c5;
+  border-radius: 12px;
+  background-color: #f8fafd;
+  color: #1f1f1f;
+  font-size: 13.5px;
+  box-sizing: border-box;
+  transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+}
+
+.modal-field input:focus {
+  background-color: #ffffff;
+  border-color: #0b57d0;
+  box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.16);
+  outline: none;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+#modal-cancel, #modal-done {
+  padding: 9px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: background-color 0.15s, box-shadow 0.15s;
+}
+
+#modal-cancel {
+  background-color: transparent;
+  border: 1px solid #c4c7c5;
+  color: #0b57d0;
+}
+
+#modal-done {
+  background-color: #0b57d0;
+  border: 1px solid #0b57d0;
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(11, 87, 208, 0.25);
+}
+
+#modal-cancel:hover {
+  background-color: #edf3fe;
+  border-color: #a8c7fa;
+}
+
+#modal-done:hover {
+  background-color: #0842a0;
+  box-shadow: 0 2px 6px rgba(11, 87, 208, 0.35);
+}
+
+/* ===== Focus Visible & Utility ===== */
+.shortcut:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 14px;
+}
+.customize-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.hidden { display: none !important; }
+
+
+/* ==========================================================================
+   PAINEL DE DEFINIÇÕES — MATERIAL DESIGN 3 (MATERIAL YOU)
+   ========================================================================== */
+
+.controls-backdrop {
+  position: fixed;
+  inset: 0;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  z-index: 4000;
+}
+
+#controls-panel.controls-panel {
+  /* Paleta Oficial Material Design 3 (Light Tone) */
+  --md-primary: #0b57d0;
+  --md-primary-hover: #0842a0;
+  --md-primary-container: #d3e3fd;
+  --md-on-primary-container: #041e49;
+  --md-surface-container-low: #f0f4f9;
+  --md-surface-card: #ffffff;
+  --md-surface-tonal-card: #e8f0fe;
+  --md-on-surface: #1f1f1f;
+  --md-on-surface-variant: #444746;
+  --md-outline-variant: #e1e6ef;
+  --md-outline: #747775;
+  --md-control-bg: #eef2f8;
+  --md-control-bg-hover: #e2e8f2;
+
+  position: fixed !important;
+  top: 14px !important;
+  right: 14px !important;
+  bottom: 14px !important;
+  left: auto !important;
+  width: min(542px, calc(100vw - 28px)) !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  z-index: 4001 !important;
+
+  background: var(--md-surface-container-low) !important;
+  border: 1px solid #d3dbe5 !important;
+  border-radius: 24px !important;
+  padding: 16px 14px 24px !important;
+  box-shadow: 0 16px 42px rgba(15, 23, 42, 0.20), 0 4px 12px rgba(15, 23, 42, 0.08) !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  text-align: left !important;
+
+  font-family: "Segoe UI", Roboto, -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 13px !important;
+  color: var(--md-on-surface) !important;
+  scrollbar-width: thin;
+  scrollbar-color: #c4c7c5 transparent;
+  animation: md3-drawer-enter 220ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+#controls-panel.controls-panel.hidden {
+  display: none !important;
+}
+
+@keyframes md3-drawer-enter {
+  from {
+    opacity: 0;
+    transform: translateX(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+#controls-panel::-webkit-scrollbar {
+  width: 6px;
+}
+#controls-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+#controls-panel::-webkit-scrollbar-thumb {
+  background: #c4c7c5;
+  border-radius: 999px;
+}
+#controls-panel::-webkit-scrollbar-thumb:hover {
+  background: #8e918f;
+}
+
+/* Ocultar divisores soltos entre cartões */
+#controls-panel > .controls-divider {
+  display: none !important;
+}
+
+/* Cartões Elevados Material Design 3 */
+#controls-panel .theme-section,
+#controls-panel section,
+#controls-panel .export-row {
+  background: var(--md-surface-card) !important;
+  border: 1px solid var(--md-outline-variant) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  margin: 0 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+}
+
+/* Cartões Tonais Secundários (Importação e Gestão de Definições) */
+#controls-panel > .export-row {
+  background: #edf4ff !important;
+  border-color: #d3e3fd !important;
+}
+
+/* Cabeçalhos de Secção M3 */
+#controls-panel .settings-heading,
+#controls-panel .section-toggle-heading,
+#controls-panel .theme-section > .settings-heading,
+#controls-panel .export-row > .settings-heading {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.35 !important;
+  color: var(--md-on-surface) !important;
+  margin: 0 0 8px 0 !important;
+  padding: 0 0 10px 0 !important;
+  border-bottom: 1px solid var(--md-outline-variant) !important;
+  text-transform: none !important;
+}
+
+/* Ícone dentro do cabeçalho com contentor tonal M3 */
+#controls-panel .section-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 28px !important;
+  min-width: 28px !important;
+  height: 28px !important;
+  border-radius: 9px !important;
+  background: var(--md-primary-container) !important;
+  color: var(--md-on-primary-container) !important;
+  font-size: 14px !important;
+  margin: 0 !important;
+  opacity: 1 !important;
+}
+
+/* Divisor interno dentro do cartão Relógio/Data */
+#controls-panel section .controls-divider {
+  display: block !important;
+  height: 1px !important;
+  background: var(--md-outline-variant) !important;
+  margin: 16px -16px 14px -16px !important;
+  border: 0 !important;
+  opacity: 1 !important;
+}
+
+/* Linhas de cada propriedade */
+#controls-panel .font-setting {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  column-gap: 12px !important;
+  row-gap: 8px !important;
+  padding: 9px 0 !important;
+  margin: 0 !important;
+  border-bottom: 1px solid var(--md-outline-variant) !important;
+  width: 100% !important;
+}
+
+#controls-panel .font-setting:last-child {
+  border-bottom: 0 !important;
+  padding-bottom: 2px !important;
+}
+
+/* Rótulos das opções */
+#controls-panel .font-setting > label:not(.visibility-option),
+#controls-panel .color-choice {
+  grid-column: 1;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--md-on-surface) !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+
+/* Pílulas de valores numéricos à direita dos Sliders (M3 Tonal Badge) */
+#controls-panel .font-setting .range-value,
+#controls-panel span[id$="-value"],
+#controls-panel output[id$="-value"] {
+  grid-column: 2;
+  justify-self: end;
+  align-self: center;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--md-primary) !important;
+  background: #e8f0fe !important;
+  padding: 2px 9px !important;
+  border-radius: 999px !important;
+  font-variant-numeric: tabular-nums !important;
+  line-height: 1.35 !important;
+  white-space: nowrap !important;
+}
+
+#controls-panel .range-value strong {
+  background: transparent !important;
+  padding: 0 !important;
+  font-weight: 600 !important;
+}
+
+/* Estrutura da secção "Fundo da página" (Corrigida para M3) */
+#controls-panel .background-options {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 8px 12px !important;
+  padding-top: 4px !important;
+}
+
+#controls-panel .vignette-settings,
+#controls-panel .glow-settings {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  padding-top: 6px !important;
+  margin: 4px 0 0 0 !important;
+  border-top: 1px solid var(--md-outline-variant) !important;
+  width: 100% !important;
+}/* Campos Select e Number estilo Material Design 3 Filled/Tonal */
+#controls-panel select,
+#controls-panel input[type="number"] {
+  grid-column: 2;
+  justify-self: end;
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 4px 12px !important;
+  border: 1.5px solid transparent !important;
+  border-radius: 10px !important;
+  background-color: var(--md-control-bg) !important;
+  color: var(--md-on-surface) !important;
+  font-family: inherit !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+#controls-panel select {
+  padding-right: 30px !important;
+  width: auto !important;
+  max-width: 170px !important;
+  cursor: pointer !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23444746' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
+}#controls-panel input[type="number"] {
+  width: 74px !important;
+  text-align: center !important;
+}
+
+#controls-panel select:hover,
+#controls-panel input[type="number"]:hover {
+  background-color: var(--md-control-bg-hover) !important;
+}
+
+#controls-panel select:focus-visible,
+#controls-panel input[type="number"]:focus-visible {
+  background-color: #ffffff !important;
+  border-color: var(--md-primary) !important;
+  box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.16) !important;
+}
+
+/* Sliders Material Design 3 (Estáveis e sem cintilação no hover) */
+#controls-panel input[type="range"] {
+  --slider-track: #0b57d0;
+  --slider-track-muted: #dbe2ee;
+  --slider-thumb-size: 18px;
+  grid-column: 1 / -1 !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  display: block !important;
+  width: 100% !important;
+  height: 22px !important;
+  min-height: 22px !important;
+  padding: 0 !important;
+  margin: 0 0 2px 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  cursor: pointer !important;
+}
+
+#controls-panel input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(
+    to right,
+    var(--slider-track) 0,
+    var(--slider-track) var(--slider-progress-px, 50%),
+    var(--slider-track-muted) var(--slider-progress-px, 50%),
+    var(--slider-track-muted) 100%
+  ) !important;
+}
+
+#controls-panel input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: var(--slider-thumb-size) !important;
+  height: var(--slider-thumb-size) !important;
+  margin-top: -6px !important;
+  border-radius: 50% !important;
+  background: var(--slider-track) !important;
+  border: 2.5px solid #ffffff !important;
+  box-shadow: 0 1px 4px rgba(11, 87, 208, 0.45) !important;
+  transition: none !important;
+}
+
+#controls-panel input[type="range"]:hover::-webkit-slider-thumb,
+#controls-panel input[type="range"]:active::-webkit-slider-thumb {
+  box-shadow: 0 1px 5px rgba(11, 87, 208, 0.6) !important;
+  transform: none !important;
+}
+
+#controls-panel input[type="range"]::-moz-range-thumb {
+  transition: none !important;
+  box-shadow: 0 1px 4px rgba(11, 87, 208, 0.45) !important;
+}
+
+/* Seletores de Cor M3 (Compatível com .color-picker-square e input[type="color"] direto) */
+#controls-panel .color-picker-square,
+#controls-panel .font-setting > input[type="color"],
+#controls-panel .background-options > input[type="color"] {
+  position: relative !important;
+  display: inline-block !important;
+  flex: 0 0 38px !important;
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 28px !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 8px !important;
+  box-shadow: 0 0 0 1px #c4c7c5, 0 1px 3px rgba(0, 0, 0, 0.14) !important;
+  overflow: hidden !important;
+  vertical-align: middle !important;
+  justify-self: end !important;
+  grid-column: 2 !important;
+  cursor: pointer !important;
+  transition: transform 0.12s ease, box-shadow 0.12s ease !important;
+}
+
+#controls-panel .color-picker-square:hover,
+#controls-panel .font-setting > input[type="color"]:hover,
+#controls-panel .background-options > input[type="color"]:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 0 0 1.5px var(--md-primary), 0 2px 6px rgba(11, 87, 208, 0.22) !important;
+}
+
+#controls-panel .color-picker-square > input[type="color"] {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  cursor: pointer !important;
+}
+
+/* Interruptores Deslizantes (M3 Switches) — Abrange Relógio, Data, Vinheta e Glow */
+#controls-panel .visibility-option {
+  grid-column: 2 !important;
+  justify-self: end !important;
+  margin: 0 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  cursor: pointer !important;
+}
+
+#controls-panel .visibility-option input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  position: relative !important;
+  width: 42px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 999px !important;
+  background-color: #dde3ea !important;
+  border: 1.5px solid var(--md-outline) !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1), border-color 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+  box-sizing: border-box !important;
+}
+
+#controls-panel .visibility-option input[type="checkbox"]::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 4px !important;
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: 50% !important;
+  background-color: #5f6368 !important;
+  transform: translateY(-50%) !important;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.2s ease, width 0.2s ease, height 0.2s ease !important;
+}
+
+#controls-panel .visibility-option input[type="checkbox"]:checked {
+  background-color: var(--md-primary) !important;
+  border-color: var(--md-primary) !important;
+}
+
+#controls-panel .visibility-option input[type="checkbox"]:checked::after {
+  width: 16px !important;
+  height: 16px !important;
+  background-color: #ffffff !important;
+  transform: translate(16px, -50%) !important;
+}
+
+#controls-panel .visibility-option input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--md-primary) !important;
+  outline-offset: 2px !important;
+}
+
+/* Botões Material Design 3 (Filled & Outlined Pill Buttons) */
+#controls-panel button {
+  min-height: 38px !important;
+  padding: 9px 18px !important;
+  border-radius: 999px !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+  transform: none !important;
+}
+
+/* Botões Primários Preenchidos (M3 Filled Button) */
+#controls-panel #save-btn,
+#controls-panel #import-bookmarks-btn {
+  width: 100% !important;
+  background-color: var(--md-primary) !important;
+  border: 1px solid var(--md-primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(11, 87, 208, 0.22) !important;
+}
+
+#controls-panel #save-btn:hover,
+#controls-panel #import-bookmarks-btn:hover {
+  background-color: var(--md-primary-hover) !important;
+  border-color: var(--md-primary-hover) !important;
+  box-shadow: 0 3px 8px rgba(11, 87, 208, 0.30) !important;
+}#controls-panel .controls-row {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Pesquisa de definições — cartão iOS/M3 com filtragem em tempo real. */
+#controls-panel .settings-search-section {
+  background: var(--md-surface-card, #fff) !important;
+  border: 1px solid var(--md-outline-variant, #dfe3eb) !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  margin: 0 0 12px 0 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .04), 0 1px 2px rgba(15, 23, 42, .02) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+#controls-panel .settings-search-section .settings-heading {
+  display: flex !important; align-items: center !important; gap: 10px !important;
+  font-size: 14px !important; font-weight: 600 !important; color: #007aff !important;
+  margin: 0 0 12px !important; padding: 0 0 10px !important;
+  border-bottom: 1px solid var(--md-outline-variant, #dfe3eb) !important;
+}
+#controls-panel .settings-search-wrap { display: flex; flex-direction: column; gap: 7px; }
+#controls-panel #settings-search-input {
+  width: 100% !important; min-width: 0 !important; box-sizing: border-box !important;
+  border: 1px solid #d2d2d7 !important; border-radius: 11px !important;
+  background: #f5f5f7 !important; color: #1d1d1f !important;
+  padding: 11px 13px !important; font: 400 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  outline: none !important; box-shadow: none !important;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease !important;
+}
+#controls-panel #settings-search-input:focus {
+  background: #fff !important; border-color: #007aff !important;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, .14) !important;
+}
+#controls-panel #settings-search-count { color: var(--md-on-surface-variant, #687080); font-size: 11px; font-weight: 400; padding-left: 2px; }
+#controls-panel [hidden] { display: none !important; }
+
+/* Os números e valores dos controlos não ficam a negrito. */
+#controls-panel .range-value,
+#controls-panel .range-value strong,
+#controls-panel output[id$="-value"],
+#controls-panel span[id$="-value"],
+#controls-panel select,
+#controls-panel input[type="number"] { font-weight: 400 !important; }
+
+
+/* Tamanho independente do favicon, sem alterar a moldura exterior. */
+#shortcuts-container > .shortcut > .dial-icon-frame {
+  overflow: hidden !important; /* clip the enlarged favicon to this dial only */
+  isolation: isolate;
+}
+#shortcuts-container > .shortcut > .dial-icon-frame > img {
+  width: var(--dial-favicon-size, 48px) !important;
+  height: var(--dial-favicon-size, 48px) !important;
+  min-width: var(--dial-favicon-size, 48px) !important;
+  min-height: var(--dial-favicon-size, 48px) !important;
+  max-width: none !important;
+  max-height: none !important;
+  flex: 0 0 auto !important;
+  object-fit: contain !important;
+  padding: 0 !important;
+  z-index: 0 !important;
+}
+
+
+/* No tema claro, a cor do relógio, da data e do botão Personalizar é controlada
+   exclusivamente pelos respetivos seletores; a cor do fundo não a altera. */
+body:not(.dark-theme) #clock-time,
+body:not(.dark-theme) #clock-date,
+body:not(.dark-theme) #customize-btn {
+  filter: none;
+}
+
+/* ===== Dark theme global: aplicado em tempo real a toda a interface ===== */
+body.dark-theme {
+  color-scheme: dark !important;
+  /* O fundo continua controlado pelas variáveis, permitindo cores e imagens personalizadas. */
+  --text-color: #f5f5f7;
+  --text-secondary: #b8bbc4;
+  --search-bg: #25272d;
+  --search-text: #f5f5f7;
+  --search-placeholder: #a4a7b0;
+  --search-border: #484b55;
+  --card-bg: #202228;
+  --card-bg-hover: #30333b;
+  --card-border: #41444e;
+  --hover-bg: rgba(255,255,255,.08);
+  --hover-bg-active: rgba(255,255,255,.14);
+  background-color: transparent !important;
+  background-image: none !important;
+  color: #f5f5f7 !important;
+}
+body.dark-theme #clock-time,
+body.dark-theme #clock-date,
+body.dark-theme .shortcut > span,
+body.dark-theme .shortcut.add > span,
+body.dark-theme #customize-btn {
+  color: #f5f5f7 !important;
+}
+body.dark-theme #customize-btn {
+  background: #292c33 !important;
+  border-color: #484b55 !important;
+}
+body.dark-theme .shortcut .menu-options,
+body.dark-theme .menu-options.is-top-layer {
+  background: #24262c !important;
+  color: #f5f5f7 !important;
+  border-color: #484b55 !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,.48) !important;
+}
+body.dark-theme .shortcut .menu-options div,
+body.dark-theme .menu-options .option,
+body.dark-theme .menu-options.is-top-layer .option {
+  color: #f5f5f7 !important;
+}
+body.dark-theme .shortcut .menu-options div:hover,
+body.dark-theme .menu-options .option:hover,
+body.dark-theme .menu-options.is-top-layer .option:hover {
+  background: #393d47 !important;
+}
+body.dark-theme #controls-panel.controls-panel {
+  --md-primary: #a8c7fa;
+  --md-primary-hover: #c2d7ff;
+  --md-primary-container: #35465f;
+  --md-on-primary-container: #e7efff;
+  --md-surface-container-low: #191b20;
+  --md-surface-card: #22252b;
+  --md-surface-tonal-card: #292e38;
+  --md-on-surface: #f5f5f7;
+  --md-on-surface-variant: #c4c7d0;
+  --md-outline-variant: #414550;
+  --md-outline: #777c89;
+  --md-control-bg: #2c3038;
+  --md-control-bg-hover: #373c46;
+  color: #f5f5f7 !important;
+  background: #191b20 !important;
+  border-color: #414550 !important;
+  scrollbar-color: #555a66 transparent;
+}
+body.dark-theme #controls-panel .theme-section,
+body.dark-theme #controls-panel section,
+body.dark-theme #controls-panel .export-row,
+body.dark-theme #controls-panel > .export-row {
+  background: #22252b !important;
+  border-color: #414550 !important;
+  color: #f5f5f7 !important;
+}
+body.dark-theme #controls-panel .settings-heading,
+body.dark-theme #controls-panel .section-toggle-heading,
+body.dark-theme #controls-panel .theme-section > .settings-heading,
+body.dark-theme #controls-panel .export-row > .settings-heading,
+body.dark-theme #controls-panel .font-setting > label:not(.visibility-option),
+body.dark-theme #controls-panel .color-choice,
+body.dark-theme #controls-panel .settings-search-section .settings-heading,
+body.dark-theme #controls-panel #settings-search-count,
+body.dark-theme #controls-panel label,
+body.dark-theme #controls-panel span,
+body.dark-theme #controls-panel output {
+  color: #f0f1f5 !important;
+  border-color: #414550 !important;
+}
+body.dark-theme #controls-panel .range-value,
+body.dark-theme #controls-panel span[id$="-value"],
+body.dark-theme #controls-panel output[id$="-value"] {
+  color: #e5edff !important;
+  background: #35465f !important;
+}body.dark-theme #controls-panel select option {
+  color: #f5f5f7 !important;
+  background: #24262c !important;
+}
+body.dark-theme #controls-panel input::placeholder,
+body.dark-theme #controls-panel textarea::placeholder {
+  color: #aeb2bd !important;
+}body.dark-theme #controls-panel #save-btn,
+body.dark-theme #controls-panel #import-bookmarks-btn {
+  color: #171a20 !important;
+  background: #a8c7fa !important;
+  border-color: #a8c7fa !important;
+}
+body.dark-theme #controls-panel .section-icon {
+  color: #e7efff !important;
+  background: #35465f !important;
+}
+body.dark-theme #controls-panel .controls-divider,
+body.dark-theme #controls-panel .font-setting,
+body.dark-theme #controls-panel .font-setting * {
+  border-color: #414550 !important;
+}
+body.dark-theme #controls-panel .font-setting {
+  background-color: transparent !important;
+}
+body.dark-theme #controls-panel .settings-search-section .settings-heading {
+  color: #a8c7fa !important;
+}
+body.dark-theme .modal-content {
+  color: #f5f5f7 !important;
+  background: #22252b !important;
+  border: 1px solid #414550 !important;
+}
+body.dark-theme .modal-content h2,
+body.dark-theme .modal-field label {
+  color: #f5f5f7 !important;
+}
+body.dark-theme .modal-field input {
+  color: #f5f5f7 !important;
+  background: #2b2e36 !important;
+  border-color: #505560 !important;
+}
+body.dark-theme #modal-cancel {
+  color: #a8c7fa !important;
+  border-color: #505560 !important;
+}
+body.dark-theme #modal-cancel:hover { background: #303744 !important; }
+body.dark-theme #modal-done { color: #171a20 !important; }
+body.dark-theme .dark-theme-section {
+  background: #22252b !important;
+  border: 1px solid #414550 !important;
+  border-radius: 16px !important;
+  padding: 16px !important;
+  margin: 0 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.25) !important;
+}
+body.dark-theme .dark-theme-section .settings-heading {
+  color: #f5f5f7 !important;
+  border-bottom-color: #414550 !important;
+}
+.dark-theme-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dark-theme-row .settings-heading { flex: 1; margin-bottom: 0 !important; }
+.dark-theme-row .visibility-option { flex: 0 0 auto; }
+.dark-theme .shortcut.add .add-icon { background: var(--dial-background-color, #fff) !important; }
+
+
+/* Os seletores mantêm o preenchimento correspondente ao valor activo em ambos os temas. */
+body.dark-theme #controls-panel .color-picker-square {
+  border-color: #777c89 !important;
+  box-shadow: 0 0 0 1px #414550, 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+}
+
+
+/* Remover o separador imediatamente acima de "Cor da vinheta". */
+#controls-panel .vignette-settings {
+  border-top: 0 !important;
+  padding-top: 2px !important;
+  margin-top: 2px !important;
+}@media (max-width: 480px) {}/* Independent horizontal clock/date offsets; vertical position remains controlled by translateY. */
+#clock-time, #clock-date { position: relative; left: 0; }
+
+
+/* Horizontal offsets and clearly marked, sticky centre (Middle) on all three sliders. */
+#customize-btn { position: relative !important; left: var(--button-horizontal-offset, 0px); }
+.middle-sticky-range {
+  background: linear-gradient(to right, transparent calc(50% - 1px), var(--cr-primary, #4778d9) calc(50% - 1px), var(--cr-primary, #4778d9) calc(50% + 1px), transparent calc(50% + 1px));
+}
+.middle-sticky-label {
+  grid-column: 1 / -1; justify-self: center; margin-top: -3px;
+  font-size: 11px; font-weight: 700; letter-spacing: .02em;
+  color: var(--cr-primary, #4778d9); line-height: 1.2;
+}
+
+
+/* Six quick-position presets for clock, date and Personalize button. */
+.position-presets {
+  grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px; width: 100%; margin: 4px 0 2px; box-sizing: border-box;
+}
+.position-preset {
+  min-width: 0; padding: 6px 3px; border: 1px solid var(--cr-divider, #d5d8de);
+  border-radius: 7px; background: var(--cr-input-bg, #f4f5f7); color: var(--cr-text-primary, #333);
+  font: inherit; font-size: 11px; line-height: 1.2; cursor: pointer; white-space: nowrap;
+}
+.position-preset:hover, .position-preset:focus-visible {
+  border-color: var(--cr-primary, #4778d9); background: var(--cr-primary, #4778d9); color: #fff; outline: none;
+}
+
+/* Clock/date position presets are grouped before both position sliders. */
+.clock-position-setting .position-presets { margin-top: 6px; margin-bottom: 8px; }
+.clock-position-setting > label { display: block; font-weight: 600; margin-bottom: 4px; }
+
+/* Clock/date alignment controls */
+.clock-alignment-options { display:flex; flex-direction:row; gap:6px; align-items:center; justify-content:flex-end; }
+.clock-alignment-option { display:flex; align-items:center; justify-content:center; text-align:center; line-height:1.2; flex:1 1 0; min-width:0; white-space:nowrap; padding:7px 8px; border:1px solid var(--border-color, #d0d0d0); border-radius:7px; background:var(--control-bg, #f3f3f3); color:var(--text-color, #222); cursor:pointer; }
+.clock-alignment-option.active { background:var(--accent-color, #dce8ff); border-color:var(--accent-color, #6b91d6); font-weight:600; }
+#clock-time, #clock-date { line-height:1; }body.dark-theme #controls-panel .clock-alignment-option,
+body.dark-theme #controls-panel .position-preset {
+  background: #2b2e36 !important;
+  background-color: #2b2e36 !important;
+  color: #f5f5f7 !important;
+  border-color: #505560 !important;
+  -webkit-text-fill-color: #f5f5f7 !important;
+}
+body.dark-theme #controls-panel .clock-alignment-option.active {
+  background: #35465f !important;
+  background-color: #35465f !important;
+  color: #f5f5f7 !important;
+  border-color: #7da2fa !important;
+  -webkit-text-fill-color: #f5f5f7 !important;
+}
+body.dark-theme #controls-panel .clock-alignment-option:hover,
+body.dark-theme #controls-panel .position-preset:hover,
+body.dark-theme #controls-panel .position-preset:focus-visible {
+  background: #3a404c !important;
+  background-color: #3a404c !important;
+  color: #ffffff !important;
+  border-color: #7da2fa !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Search bar widget and modernized Customize label field */
+.page-searchbar {
+  position: relative;
+  z-index: 5;
+  top: auto;
+  left: auto;
+  margin: 0 auto 24px;
+  width: min(var(--searchbar-width, 560px), calc(100vw - 32px));
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 7px 5px 16px;
+  border: 1px solid var(--searchbar-limit, #d2d2d7);
+  border-radius: var(--searchbar-radius, 36px);
+  background: var(--searchbar-bg, #fff) !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 0 var(--searchbar-glow-size, 12px) color-mix(in srgb, var(--searchbar-glow, #9b5de5) var(--searchbar-glow-opacity, 20%), transparent);
+  transform: translate(var(--searchbar-x, 0px), var(--searchbar-y, 0px));
+}
+.page-searchbar.hidden { display: none !important; }
+.page-searchbar input {
+  flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
+  color: var(--searchbar-text, #1d1d1f); font-family: var(--searchbar-font-family, system-ui);
+  font-size: var(--searchbar-font-size, 16px); font-weight: var(--searchbar-font-weight, 400);
+  padding: 9px 0; box-shadow: none !important;
+}
+.page-searchbar input::placeholder { color: var(--searchbar-text, #1d1d1f); opacity: .58; }
+.page-searchbar button { flex: 0 0 36px; width: 36px; height: 36px; border: 0; border-radius: 50%; cursor: pointer; color: var(--searchbar-text, #1d1d1f); background: transparent; font-size: 23px; display: grid; place-items: center; }
+.page-searchbar button:hover { background: color-mix(in srgb, var(--searchbar-text, #1d1d1f) 10%, transparent); }
+#controls-panel #button-label, #controls-panel #searchbar-settings input[type="text"] {
+  width: 100%; box-sizing: border-box; min-height: 42px; padding: 10px 13px;
+  border: 1px solid var(--control-border, #c9cbd2); border-radius: 12px;
+  background: var(--control-bg, #fff); color: var(--control-text, #202127);
+  font: inherit; outline: none; transition: border-color .18s, box-shadow .18s, background .18s;
+}
+#controls-panel #button-label:focus { border-color: #4d8dff; box-shadow: 0 0 0 3px rgb(77 141 255 / 18%); }
+body.dark-theme .page-searchbar { --searchbar-limit: #555b68; }
+body.dark-theme #controls-panel #button-label { background: #191b20; color: #f5f5f7; border-color: #414550; }
+body.dark-theme #controls-panel #button-label:focus { border-color: #7ca7ff; }
+
+/* Search bar height control */
+.page-searchbar { min-height: var(--searchbar-height, 44px); height: var(--searchbar-height, 44px); box-sizing: border-box; }
+.page-searchbar input { height: 100%; min-height: 0; box-sizing: border-box; }
+.page-searchbar button { height: calc(100% - 8px); }
+
+
+/* Vertical tabbed settings popup */
+#controls-panel .settings-tabs-layout {
+  display:grid !important; grid-template-columns: var(--settings-nav-width, 176px) minmax(0,1fr) !important; gap:10px !important;
+  align-items:start !important; min-height:0; width:100%;
+}
+#controls-panel .settings-tabs-nav { display:flex !important; flex-direction:column !important; gap:5px !important; position:sticky; top:0; min-width:0; }
+#controls-panel .settings-sidebar-footer { margin-top:auto !important; padding:10px 0 0 !important; border:0 !important; background:transparent !important; box-shadow:none !important; display:flex !important; flex-direction:column !important; gap:7px !important; }#controls-panel .settings-sidebar-footer .settings-heading { display:block; color:#007AFF !important; font-size:12px !important; font-weight:600 !important; line-height:1.3; margin:0 0 2px !important; background:transparent !important; border:0 !important; padding:0 !important; }
+#controls-panel .settings-sidebar-footer .settings-heading .section-icon { display:none !important; }#controls-panel .settings-tabs-nav { min-height:100%; align-self:stretch !important; }
+#controls-panel .settings-tab {
+  display:flex !important; align-items:center !important; gap:8px !important; width:100% !important; min-width:0 !important;
+  border:1px solid transparent !important; border-radius:10px !important; padding:9px 8px !important;
+  background:transparent !important; color:var(--md-on-surface,#202124) !important; text-align:left !important;
+  font-size:12px !important; line-height:1.25 !important; font-weight:500 !important; cursor:pointer !important;
+  box-shadow:none !important; white-space:normal !important;
+}
+#controls-panel .settings-tab > span:first-child { width:17px; flex:0 0 17px; text-align:center; font-size:14px; }
+#controls-panel .settings-tab[aria-selected="true"] { background:var(--md-primary-container,#d3e3fd) !important; color:var(--md-on-primary-container,#041e49) !important; border-color:var(--md-outline-variant,#dfe3eb) !important; }
+#controls-panel .settings-tab:hover { background:var(--md-control-bg-hover,#e2e8f2) !important; }
+#controls-panel .settings-tabs-content { min-width:0 !important; }
+#controls-panel .settings-tab-panel { min-width:0; display:flex; flex-direction:column; gap:10px; }
+#controls-panel .settings-tab-panel[hidden] { display:none !important; }
+#controls-panel .settings-tab-panel > section,
+#controls-panel .settings-tab-panel > .theme-section,
+#controls-panel .settings-tab-panel > .export-row { min-width:0; margin-top:0 !important; }
+#controls-panel .settings-search-section { margin-bottom:0 !important; }
+#controls-panel .settings-search-section .settings-heading { margin-bottom:8px !important; padding-bottom:7px !important; }
+#controls-panel .settings-search-wrap { gap:5px !important; }
+#controls-panel #settings-search-input { padding:9px 11px !important; }
+#controls-panel .controls-row { margin-top:2px !important; }
+#controls-panel .settings-tabs-nav .settings-tab[hidden] { display:none !important; }
+@media (max-width: 390px) {
+  #controls-panel .settings-tabs-layout { grid-template-columns: 96px minmax(0,1fr) !important; gap:7px !important; }
+  #controls-panel .settings-tab { padding:8px 5px !important; gap:5px !important; font-size:11px !important; }
+  #controls-panel .settings-tab > span:first-child { width:14px; flex-basis:14px; }
+}
+
+/* Inline controls requested for the settings headings. */
+#controls-panel .inline-setting-heading { display:flex; align-items:center; gap:12px; min-width:0; }
+#controls-panel .inline-setting-heading .settings-heading { flex:0 0 auto; margin:0; }
+#controls-panel .inline-setting-heading select { flex:1 1 auto; min-width:0; width:auto !important; max-width:100%; margin:0 !important; }
+#controls-panel .settings-search-heading-row { display:flex; align-items:center; gap:12px; min-width:0; }
+#controls-panel .settings-search-heading-row .settings-heading { flex:0 0 auto; margin:0 !important; padding:0 !important; border:0 !important; }
+#controls-panel .settings-search-heading-row #settings-search-input { flex:1 1 auto; min-width:0; width:auto; }
+#controls-panel .settings-search-wrap { margin-top:4px; }
+
+/* Keep the top controls compact and aligned, without a divider under Language. */
+#controls-panel > .language-section {
+  border-bottom-color: transparent !important;
+  margin-bottom: 0 !important;
+}
+#controls-panel > .language-section .inline-setting-heading {
+  display: grid !important;
+  grid-template-columns: minmax(100px, auto) minmax(120px, 1fr) !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: 100%;
+}
+#controls-panel > .language-section .inline-setting-heading .settings-heading {
+  display: flex !important;
+  align-items: center !important;
+  min-height: 38px;
+  white-space: nowrap;
+}
+#controls-panel > .language-section #language-select {
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  align-self: center !important;
+}#controls-panel > .settings-search-section .settings-search-heading-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+}
+#controls-panel > .settings-search-section .settings-search-heading-row .settings-heading {
+  display: flex !important;
+  align-items: center !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+}
+#controls-panel > .settings-search-section .settings-search-heading-row #settings-search-input {
+  flex: 0 1 320px !important;
+  width: min(320px, 60%) !important;
+  max-width: 60% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}#controls-panel > .settings-search-section .settings-search-heading-row #settings-search-input {
+  flex: 0 1 320px !important;
+  width: min(320px, 60%) !important;
+  max-width: 60% !important;
+  min-width: 0 !important;
+  align-self: center !important;
+  margin: 0 !important;
+}#controls-panel > .settings-search-section .settings-search-heading-row {
+  justify-content: flex-start !important;
+}
+
+
+/* Align the Search settings input to the right, matching the two selectors above. */
+#controls-panel > .settings-search-section .settings-search-heading-row #settings-search-input {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+  flex: 0 1 320px !important;
+  width: min(320px, 60%) !important;
+  max-width: 60% !important;
+}/* Keep settings tab labels visible, including the Customize button tab. */
+#controls-panel .settings-tabs-nav .settings-tab .settings-tab-label {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+  color: inherit !important;
+}
+
+
+/* Explicitly force the Customize button tab label to remain readable in both themes. */
+#controls-panel .settings-tabs-nav .settings-tab[data-tab-id="button"],
+#controls-panel .settings-tabs-nav #settings-tab-button { color: #202124 !important; }
+#controls-panel .settings-tabs-nav #settings-tab-button .settings-tab-label {
+  display: block !important; visibility: visible !important; opacity: 1 !important;
+  color: #202124 !important; -webkit-text-fill-color: #202124 !important;
+  font-size: 12px !important; line-height: 1.25 !important;
+  flex: 1 1 auto !important; min-width: 0 !important; width: auto !important;
+  overflow: visible !important; white-space: normal !important;
+}
+#controls-panel .settings-tabs-nav #settings-tab-button[aria-selected="true"] .settings-tab-label { color: #041e49 !important; -webkit-text-fill-color: #041e49 !important; }
+body.dark-theme #controls-panel .settings-tabs-nav #settings-tab-button { color: #f5f5f7 !important; }
+body.dark-theme #controls-panel .settings-tabs-nav #settings-tab-button .settings-tab-label { color: #f5f5f7 !important; -webkit-text-fill-color: #f5f5f7 !important; }
+body.dark-theme #controls-panel .settings-tabs-nav #settings-tab-button[aria-selected="true"] .settings-tab-label { color: #f5f5f7 !important; -webkit-text-fill-color: #f5f5f7 !important; }
+
+/* Keep Customize-button position preset captions centered in both axes. */
+#controls-panel .button-settings .position-preset {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  white-space: normal !important;
+  min-height: 38px;
+  line-height: 1.2;
+  padding: 6px 5px;
+  box-sizing: border-box;
+}/* Keep Language and bookmark import on a single compact row above settings tabs. */
+#controls-panel > .top-utility-controls {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin: 0 0 8px !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}#controls-panel > .top-utility-controls .inline-setting-heading {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+#controls-panel > .top-utility-controls .inline-setting-heading .settings-heading {
+  min-height: 0 !important;
+  height: auto !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+  font-size: 12px !important;
+}#controls-panel .position-presets .position-preset {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+  min-height: 38px !important;
+  padding: 4px !important;
+  white-space: nowrap !important;
+}
+#controls-panel .position-presets .position-preset::first-letter { line-height: 1 !important; }
+@media (max-width: 520px) {
+  #controls-panel > .top-utility-controls { gap: 5px !important; }#controls-panel > .top-utility-controls .inline-setting-heading .settings-heading { font-size: 11px !important; }
+}
+
+/* Keep the Customize button tab label visible in both themes. */
+#controls-panel .settings-tabs-nav button#settings-tab-button > .settings-tab-label,
+#controls-panel .settings-tabs-nav button#settings-tab-button > span.settings-tab-label {
+  display: inline-block !important; visibility: visible !important; opacity: 1 !important;
+  width: auto !important; height: auto !important; max-width: none !important;
+  overflow: visible !important; clip: auto !important; white-space: normal !important;
+  flex: 1 1 auto !important; font-size: 12px !important; line-height: 1.25 !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+#controls-panel .settings-tabs-nav button#settings-tab-button { min-width: 0 !important; }
+body.dark-theme #controls-panel .settings-tabs-nav button#settings-tab-button,
+body.dark-theme #controls-panel .settings-tabs-nav button#settings-tab-button > .settings-tab-label { color: #f5f5f7 !important; }
+body:not(.dark-theme) #controls-panel .settings-tabs-nav button#settings-tab-button,
+body:not(.dark-theme) #controls-panel .settings-tabs-nav button#settings-tab-button > .settings-tab-label { color: #202124 !important; }
+/* Position controls are deliberately grouped at the bottom of Customize button settings. */
+#controls-panel .button-settings > .font-setting:has([data-position-group="button-horizontal"]),
+#controls-panel .button-settings > .font-setting:has(#button-vertical),
+#controls-panel .button-settings > .font-setting:has(#button-horizontal) { order: 999 !important; }
+
+
+/* Compact spacing between Search settings, utility controls, and the settings tabs. */
+#controls-panel > .settings-search-section { margin-bottom: 5px !important; }
+#controls-panel > .top-utility-controls { margin: 0 0 5px !important; gap: 7px !important; }
+#controls-panel > .settings-tabs-layout { margin-top: 0 !important; }
+
+
+/* Reduce the Search settings card footprint relative to its background. */
+#controls-panel > .settings-search-section {
+  padding: 9px 10px !important;
+  margin: 0 0 7px 0 !important;
+  border-radius: 14px !important;
+  gap: 4px !important;
+}
+#controls-panel > .settings-search-section .settings-search-heading-row {
+  gap: 8px !important;
+}
+#controls-panel > .settings-search-section .settings-search-heading-row .settings-heading {
+  margin: 0 !important; padding: 0 !important; border: 0 !important;
+}
+#controls-panel > .settings-search-section .settings-search-wrap {
+  margin: 0 !important; min-height: 0 !important;
+}
+
+/* Pro layout presets: visual placeholders for future saved layouts. */
+#controls-panel .presets-panel { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--settings-border, #d9dee8); }
+#controls-panel .presets-panel-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+#controls-panel .presets-panel-description { margin: 0 0 12px; color: #626b7a; font-size: 12px; line-height: 1.4; }#controls-panel .preset-thumbnail { position: relative; display: flex; flex-direction: column; justify-content: center; gap: 8px; width: 100%; aspect-ratio: 16 / 9; min-height: 78px; overflow: hidden; box-sizing: border-box; padding: 9px 12px; border-radius: 7px; }
+#controls-panel .preset-thumb-light { background: linear-gradient(135deg, #f7f8fb, #e8edf5); }
+#controls-panel .preset-thumb-dark { background: linear-gradient(135deg, #20232b, #101116); }
+#controls-panel .thumb-clock { display: block; width: 35%; height: 3px; margin: 0 auto; border-radius: 3px; background: #9aa6b9; opacity: .7; }
+#controls-panel .preset-thumb-dark .thumb-clock { background: #b5c0d4; }
+#controls-panel .thumb-dials { display: flex; align-items: center; justify-content: center; gap: 7px; }
+#controls-panel .thumb-dials i { display: block; width: 15px; height: 15px; flex: 0 0 15px; border-radius: 50%; background: #fff; border: 1px solid #c7d0df; box-shadow: 0 2px 5px #0000000b; }
+#controls-panel .preset-thumb-dark .thumb-dials i { background: #343946; border-color: #5b6577; }
+#controls-panel .preset-thumb-minimal .thumb-dials i { width: 18px; height: 18px; flex-basis: 18px; }
+#controls-panel .thumb-search { display: block; width: 54%; height: 5px; margin: 0 auto; border-radius: 5px; background: #d8deea; }
+#controls-panel .preset-thumb-dark .thumb-search { background: #414755; }body.dark-theme #controls-panel .presets-panel { border-top-color: #414958; }
+body.dark-theme #controls-panel .presets-panel-description { color: #c3c8d2; }/* Refined settings UI: quieter surfaces, consistent spacing, and less ornamental styling. */
+#controls-panel.controls-panel {
+  --md-primary: #315b8f;
+  --md-primary-hover: #25486f;
+  --md-primary-container: #e6edf5;
+  --md-on-primary-container: #243c59;
+  --md-surface-container-low: #f4f5f7;
+  --md-surface-card: #ffffff;
+  --md-surface-tonal-card: #edf1f6;
+  --md-on-surface: #242a32;
+  --md-on-surface-variant: #626b77;
+  --md-outline-variant: #e1e5ea;
+  --md-outline: #a8b0ba;
+  --md-control-bg: #f7f8fa;
+  --md-control-bg-hover: #edf0f4;
+  border-radius: 18px !important;
+  padding: 14px !important;
+  gap: 10px !important;
+  box-shadow: 0 10px 30px rgba(24, 35, 52, .14), 0 2px 6px rgba(24, 35, 52, .05) !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+#controls-panel .theme-section,
+#controls-panel section,
+#controls-panel .export-row {
+  border-radius: 12px !important;
+  padding: 14px !important;
+  box-shadow: 0 1px 2px rgba(24, 35, 52, .035) !important;
+}
+#controls-panel .settings-heading,
+#controls-panel .section-toggle-heading,
+#controls-panel .theme-section > .settings-heading,
+#controls-panel .export-row > .settings-heading {
+  gap: 9px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.4 !important;
+  margin-bottom: 9px !important;
+  padding-bottom: 9px !important;
+}
+#controls-panel .section-icon {
+  width: 26px !important;
+  min-width: 26px !important;
+  height: 26px !important;
+  border-radius: 7px !important;
+  background: #eaf0f7 !important;
+  color: #315b8f !important;
+  font-size: 13px !important;
+}
+#controls-panel .font-setting {
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  border-bottom-color: #edf0f3 !important;
+}
+#controls-panel .font-setting > label:not(.visibility-option),
+#controls-panel .color-choice {
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+  color: #4b5562 !important;
+}
+#controls-panel select,
+#controls-panel input[type="number"],
+#controls-panel #settings-search-input {
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+#controls-panel select,
+#controls-panel input[type="number"] {
+  min-height: 34px !important;
+  border-color: #d7dce3 !important;
+  background: #fafbfc !important;
+}
+#controls-panel button {
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  transition: background-color .14s ease, border-color .14s ease, color .14s ease !important;
+}#controls-panel .settings-search-section {
+  border-radius: 12px !important;
+  padding: 12px !important;
+  box-shadow: 0 1px 2px rgba(24, 35, 52, .035) !important;
+}
+#controls-panel .settings-search-section .settings-heading {
+  color: #315b8f !important;
+  font-size: 13px !important;
+  margin-bottom: 8px !important;
+  padding-bottom: 8px !important;
+}
+#controls-panel #settings-search-input {
+  background: #f8f9fb !important;
+  border-color: #d7dce3 !important;
+  padding: 9px 11px !important;
+  font-size: 13px !important;
+}
+#controls-panel #settings-search-input:focus {
+  border-color: #6688b2 !important;
+  box-shadow: 0 0 0 2px rgba(49, 91, 143, .12) !important;
+}#controls-panel .presets-panel-description,
+#controls-panel .settings-description,
+#controls-panel .setting-description {
+  color: #68717d !important;
+  line-height: 1.5 !important;
+}
+body.dark-theme #controls-panel.controls-panel {
+  --md-primary: #9bbbe2;
+  --md-primary-hover: #b4ccef;
+  --md-primary-container: #303d4e;
+  --md-on-primary-container: #e0e9f5;
+  --md-surface-container-low: #20242a;
+  --md-surface-card: #292e35;
+  --md-surface-tonal-card: #303640;
+  --md-on-surface: #edf0f4;
+  --md-on-surface-variant: #b8c0cb;
+  --md-outline-variant: #414852;
+  --md-outline: #747e8a;
+  --md-control-bg: #30363f;
+  --md-control-bg-hover: #39414c;
+  border-color: #3b424c !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .32), 0 2px 6px rgba(0, 0, 0, .16) !important;
+}
+body.dark-theme #controls-panel .section-icon {
+  background: #354355 !important;
+  color: #d7e5f7 !important;
+}
+body.dark-theme #controls-panel .font-setting > label:not(.visibility-option),
+body.dark-theme #controls-panel .color-choice,
+body.dark-theme #controls-panel .presets-panel-description,
+body.dark-theme #controls-panel .settings-description,
+body.dark-theme #controls-panel .setting-description {
+  color: #c0c7d0 !important;
+}
+body.dark-theme #controls-panel select,
+body.dark-theme #controls-panel input[type="number"],
+body.dark-theme #controls-panel #settings-search-input {
+  background: #252a31 !important;
+  border-color: #454d58 !important;
+  color: #edf0f4 !important;
+}
+body.dark-theme #controls-panel .font-setting {
+  border-bottom-color: #383f48 !important;
+}/* Language spans the full settings-panel width; bookmark import belongs to Pro. */
+#controls-panel > .top-utility-controls {
+  display: block !important;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+#controls-panel > .top-utility-controls > .language-section {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+  grid-column: 1 / -1;
+}
+#controls-panel > .top-utility-controls > .language-section .inline-setting-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+#controls-panel > .top-utility-controls > .language-section #language-select {
+  width: 100% !important;
+  min-width: 0;
+  box-sizing: border-box;
+}/* Requested settings-panel width increase and final Pro section ordering. */
+#controls-panel.controls-panel { width: min(492px, calc(100vw - 28px)) !important; }/* Language selector at the bottom of the settings sidebar: unboxed and aligned with the tabs. */
+#controls-panel .settings-tabs-nav > .settings-language-sidebar {
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  gap:7px !important;
+  width:100% !important;
+  min-width:0 !important;
+  margin-top:10px !important;
+  padding:12px 0 0 !important;
+  flex:0 0 auto !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  box-sizing:border-box !important;
+}
+#controls-panel .settings-tabs-nav > .settings-language-sidebar::before {
+  display:block !important;
+  content:"" !important;
+  width:100% !important;
+  height:1px !important;
+  margin:0 0 2px !important;
+  background:var(--md-outline-variant,#d9dee7) !important;
+}
+#controls-panel .settings-tabs-nav > .settings-language-sidebar::after { display:none !important; content:none !important; }
+body.dark-theme #controls-panel .settings-tabs-nav > .settings-language-sidebar::before { background:#414958 !important; }
+#controls-panel .settings-tabs-nav > .settings-language-sidebar .inline-setting-heading {
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  gap:7px !important;
+  width:100% !important;
+  margin:0 !important;
+}
+#controls-panel .settings-tabs-nav > .settings-language-sidebar .settings-heading {
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  color:var(--md-on-surface,#202124) !important;
+  font-size:12px !important;
+  font-weight:600 !important;
+  line-height:1.35 !important;
+}
+#controls-panel .settings-tabs-nav > .settings-language-sidebar .section-icon { display:none !important; }
+#controls-panel .settings-tabs-nav > .settings-language-sidebar #language-select {
+  display:block !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  box-sizing:border-box !important;
+}
+
+
+/* Let the settings popup shrink/grow to the active tab content. Long tabs remain scrollable within the viewport. */
+#controls-panel.controls-panel {
+  top: 14px !important;
+  bottom: auto !important;
+  height: auto !important;
+  max-height: calc(100vh - 28px) !important;
+  overflow-y: auto !important;
+  align-self: flex-start !important;
+}
+#controls-panel.controls-panel > .settings-tabs-content,
+#controls-panel.controls-panel .settings-tab-content.active {
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+
+/* Grow the settings popup to fit the longest translated sidebar tab label. */
+#controls-panel .settings-tabs-layout {
+  grid-template-columns: var(--settings-nav-width, 126px) minmax(0, 1fr) !important;
+}
+#controls-panel .settings-tabs-nav .settings-tab-label {
+  white-space: nowrap !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  flex: 0 0 auto !important;
+}
+#controls-panel.controls-panel {
+  width: min(var(--settings-panel-width, 592px), calc(100vw - 28px)) !important;
+}/* Pro Backgrounds gallery — designed to accept more presets later. */
+#controls-panel .pro-backgrounds-panel { display:flex; flex-direction:column; gap:8px; padding:12px; margin-top:2px; border:1px solid rgba(110,120,150,.24); border-radius:12px; background:rgba(255,255,255,.28); }
+#controls-panel .backgrounds-panel-heading { display:flex; align-items:center; gap:8px; margin:0; font-size:14px; }
+#controls-panel .backgrounds-panel-description { margin:0; font-size:12px; line-height:1.45; color:var(--md-on-surface-variant, #626773); }
+#controls-panel .background-gallery { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+body.dark-theme #controls-panel .pro-backgrounds-panel { background:rgba(25,27,32,.42); border-color:rgba(160,165,185,.25); }/* Ensure the background-glow switch remains visible beside its label. */
+#controls-panel #background-glow-toggle-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: 100% !important;
+  min-height: 42px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+#controls-panel #background-glow-toggle-row > label:first-child {
+  display: block !important;
+  grid-column: 1 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+#controls-panel #background-glow-toggle-row > .visibility-option {
+  display: inline-flex !important;
+  grid-column: 2 !important;
+  align-items: center !important;
+  justify-self: end !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+#controls-panel #background-glow-toggle-row > .visibility-option input[type="checkbox"] {
+  display: block !important;
+  visibility: visible !important;
+}

@@ -1,11 +1,22 @@
-Another Chrome (and related browsers) "Speed Dial Extension"
+# Private Speed Dial CE
 
-Installation in Google Chrome:
-1. Extract the contents of the ZIP file that you download from this repo into a folder.
-2. Open chrome://extensions
-3. Enable “Developer mode”.
-4. Click “Load unpacked” and select the extracted folder.
+An open-source new-tab page with a customizable shortcut grid, clock and date, search bar, a solid page-background colour selector, and layout/appearance controls.
 
-Notes on this "Community edition":
-This build excludes these Pro features: JSON import/export, bookmark-folder import, custom background color/image controls, dark-theme toggle and preset layouts.
-The bookmark permission was removed because bookmark import is not included in this community edition.
+## Community Edition scope
+
+Private Speed Dial CE contains no Pro licensing, payment, subscription, or ExtensionPay integration. Pro-only wallpaper galleries and bundled wallpaper images are not included. The page background colour selector remains available.
+
+## Install locally
+
+1. Download or clone this repository.
+2. Open `chrome://extensions` in Chrome.
+3. Enable **Developer mode**.
+4. Select **Load unpacked** and choose the folder containing `manifest.json`.
+
+## Privacy
+
+The extension stores its settings and shortcuts locally in the browser. It does not include ExtensionPay or payment-related code. Google search suggestions and thumbnail capture use the relevant browser/network capabilities when those features are used.
+
+## Contributing
+
+Issues and pull requests are welcome. Please include reproduction steps for bugs and describe the browser/version tested.

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Private Speed Dial CE</title>
+<script src="startup-theme.js"></script>
+  <link rel="stylesheet" href="newtab.css">
+</head>
+<body>
+  <div id="page-background-layer" aria-hidden="true"></div>
+  <div id="bg-overlay"></div>
+  <div class="container">
+    <div id="page-content">
+    <div class="clock-widget" aria-label="Relógio">
+      <div id="clock-time" class="clock-time"></div>
+      <div id="clock-date" class="clock-date"></div>
+    </div>
+
+    <div id="clock-dial-separator" class="clock-dial-separator" aria-hidden="true"></div>
+
+    <form id="page-searchbar" class="page-searchbar hidden" role="search" autocomplete="off">
+      <input id="page-search-input" type="search" placeholder="Search the web…" aria-label="Search the web" spellcheck="false">
+    </form>
+    <div class="shortcuts" id="shortcuts-container" role="list" aria-label="Atalhos"></div>
+
+    <div id="dial-button-separator" class="clock-dial-separator dial-button-separator" aria-hidden="true"></div>
+
+    <button id="customize-btn" class="customize-btn" type="button" aria-expanded="false" aria-controls="controls-panel">Settings</button>
+    </div><!-- /#page-content: camada animada da página de dials -->
+
+    <div id="controls-backdrop" class="controls-backdrop hidden"></div>
+    <aside id="controls-panel" class="controls-panel hidden" role="region" aria-label="Settings">
+      <section class="language-section" aria-label="Language" style="padding: 12px 14px;">
+        <div class="inline-setting-heading"><strong class="settings-heading"><span class="section-icon" aria-hidden="true">🌐</span>Language</strong>
+        <select id="language-select" aria-label="Language">
+          <option value="en" selected>English</option><option value="pt">Português</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option>
+        </select></div>
+      </section>
+      <section class="settings-search-section" aria-label="Pesquisar definição">
+        <div class="settings-search-heading-row"><strong class="settings-heading"><span class="section-icon" aria-hidden="true">⌕</span>Pesquisar definição</strong>
+          <input type="search" id="settings-search-input" autocomplete="off" spellcheck="false" aria-label="Pesquisar definição">
+        </div>
+        <div class="settings-search-wrap"><span id="settings-search-count" aria-live="polite">Todas as definições</span></div>
+      </section>
+      <section class="searchbar-settings" aria-label="Search bar settings">
+        <strong class="settings-heading"><span class="section-icon" aria-hidden="true">🔎</span>Search bar <label class="visibility-option" style="float:right" title="Enable search bar"><input id="searchbar-enabled" type="checkbox" aria-label="Enable search bar"></label></strong>
+        <div class="font-setting"><label for="searchbar-engine">Default search engine</label><select id="searchbar-engine"><option value="google">Google</option><option value="bing">Bing</option><option value="duckduckgo">DuckDuckGo</option><option value="yahoo">Yahoo</option><option value="brave">Brave Search</option><option value="ecosia">Ecosia</option><option value="startpage">Startpage</option></select></div>
+        <div class="font-setting"><label for="searchbar-vertical">Vertical position</label><output class="range-value" id="searchbar-vertical-value" for="searchbar-vertical"></output><input id="searchbar-vertical" type="range" min="-800" max="800" step="1" value="0"></div>
+        <div class="font-setting"><label for="searchbar-horizontal">Horizontal position</label><output class="range-value" id="searchbar-horizontal-value" for="searchbar-horizontal"></output><input id="searchbar-horizontal" class="middle-sticky-range" type="range" min="-1200" max="1200" step="1" value="0"><span class="middle-sticky-label">Middle</span></div>
+        
+        <div class="font-setting"><label for="searchbar-width">Size</label><output class="range-value" id="searchbar-width-value" for="searchbar-width"></output><input id="searchbar-width" type="range" min="240" max="1200" step="10" value="560"></div>
+        <div class="font-setting"><label for="searchbar-height">Height</label><output class="range-value" id="searchbar-height-value" for="searchbar-height"></output><input id="searchbar-height" type="range" min="28" max="100" step="1" value="44"></div>
+        <div class="font-setting"><label for="searchbar-shape">Shape</label><output class="range-value" id="searchbar-shape-value" for="searchbar-shape"></output><input id="searchbar-shape" type="range" min="0" max="100" step="1" value="100"></div>
+        <div class="font-setting"><label for="searchbar-opacity">Opacity</label><output class="range-value" id="searchbar-opacity-value" for="searchbar-opacity"></output><input id="searchbar-opacity" type="range" min="0" max="100" step="1" value="100"></div>
+        <div class="font-setting"><label for="searchbar-color">Color</label><input id="searchbar-color" type="color" value="#ffffff"></div>
+        <div class="font-setting"><label for="searchbar-limit-color">Limit color</label><input id="searchbar-limit-color" type="color" value="#d2d2d7"></div>
+        <div class="font-setting"><label for="searchbar-glow-color">Glow</label><input id="searchbar-glow-color" type="color" value="#9b5de5"></div>
+        <div class="font-setting"><label for="searchbar-glow-size">Glow size</label><output class="range-value" id="searchbar-glow-size-value" for="searchbar-glow-size"></output><input id="searchbar-glow-size" type="range" min="0" max="60" step="1" value="12"></div>
+        <div class="font-setting"><label for="searchbar-glow-opacity">Glow opacity</label><output class="range-value" id="searchbar-glow-opacity-value" for="searchbar-glow-opacity"></output><input id="searchbar-glow-opacity" type="range" min="0" max="100" step="1" value="20"></div>
+        
+        
+        <div class="font-setting"><label for="searchbar-font-family">Text family</label><select id="searchbar-font-family"><option value="system">System</option><option value="Arial, Helvetica, sans-serif">Arial</option><option value="Verdana, Geneva, sans-serif">Verdana</option><option value="'Segoe UI', sans-serif">Segoe UI</option><option value="Roboto, Arial, sans-serif">Roboto</option><option value="Georgia, serif">Georgia</option><option value="'Courier New', monospace">Courier New</option></select></div>
+        <div class="font-setting"><label for="searchbar-font-size">Text size</label><input id="searchbar-font-size" type="number" min="10" max="32" value="16"></div>
+        <div class="font-setting"><label for="searchbar-font-weight">Text weight</label><select id="searchbar-font-weight"><option value="300">Light</option><option value="400" selected>Normal</option><option value="500">Medium</option><option value="600">Semibold</option><option value="700">Bold</option></select></div>
+        <div class="font-setting"><label for="searchbar-font-color">Text color</label><input id="searchbar-font-color" type="color" value="#1d1d1f"></div>
+      </section>
+      <div class="controls-divider"></div>
+      <div class="theme-section">
+        <label class="settings-heading"><span class="section-icon" aria-hidden="true">🖼️</span>Fundo da página</label>
+        <div class="font-setting community-background-color-row">
+          <label class="color-choice" for="bg-color-picker" data-i18n="Page background color">Page background color</label>
+          <input type="color" id="bg-color-picker" value="#ffffff" aria-label="Page background color">
+        </div>
+<div class="background-options">
+          <div class="vignette-settings">
+            <div class="font-setting"><label for="vignette-enabled">Ativar vinheta</label><label class="visibility-option"><input type="checkbox" id="vignette-enabled" aria-label="Ativar vinheta de fundo" title="Ativar/desativar vinheta"></label></div>
+             <div class="font-setting"><label for="vignette-color-picker">Cor da vinheta</label><input type="color" id="vignette-color-picker" value="#000000" aria-label="Cor da vinheta"></div>
+            <div class="font-setting"><label for="vignette-size">Tamanho da vinheta</label><output class="range-value" id="vignette-size-value" for="vignette-size"><strong>45%</strong></output><input type="range" id="vignette-size" min="5" max="100" step="1" value="45" aria-label="Tamanho da vinheta"></div>
+            <div class="font-setting"><label for="vignette-opacity">Opacidade da vinheta</label><output class="range-value" id="vignette-opacity-value" for="vignette-opacity"><strong>45%</strong></output><input type="range" id="vignette-opacity" min="0" max="100" step="1" value="45" aria-label="Opacidade da vinheta"></div>
+          </div>
+          <div class="glow-settings">
+        <div class="font-setting background-glow-toggle" id="background-glow-toggle-row"><label for="glow-enabled" data-i18n="Enable background glow">Enable background glow</label><span class="visibility-option"><input type="checkbox" id="glow-enabled" aria-label="Enable background glow" title="Enable/disable background glow"></span></div>
+            <div class="font-setting"><label for="glow-color-picker">Cor do glow de fundo</label><input type="color" id="glow-color-picker" value="#a8c7fa" aria-label="Cor do glow central"></div>
+            
+            <div class="font-setting"><label for="glow-opacity">Opacidade do glow de fundo</label><output class="range-value" id="glow-opacity-value" for="glow-opacity"><strong>10%</strong></output><input type="range" id="glow-opacity" min="0" max="100" step="1" value="10" aria-label="Opacidade do glow"></div>
+            <div class="font-setting"><label for="glow-size">Tamanho do glow de fundo</label><output class="range-value" id="glow-size-value" for="glow-size"><strong>58%</strong></output><input type="range" id="glow-size" min="20" max="100" step="1" value="58" aria-label="Tamanho do glow"></div>
+            <div class="font-setting"><label for="glow-position">Posição do glow de fundo</label><output class="range-value" id="glow-position-value" for="glow-position"><strong>50%</strong></output><input type="range" id="glow-position" min="0" max="100" step="1" value="50" aria-label="Posição vertical do glow"></div>
+          </div>
+        </div>
+      </div>
+      <div class="controls-divider"></div>
+      <section class="dial-settings animation-duration-settings" aria-label="Animations">
+        <strong class="settings-heading"><span class="section-icon" aria-hidden="true">✨</span>Animations</strong>
+
+        <div class="animation-choice-row"><label for="dial-fade-enabled">Fade in page elements</label><label class="visibility-option"><input type="checkbox" id="dial-fade-enabled" checked aria-label="Enable Fade in"></label></div>
+        <div class="font-setting"><label for="dial-entry-duration">Fade in duration</label><output class="range-value" id="dial-entry-duration-value" for="dial-entry-duration"></output><input type="range" id="dial-entry-duration" min="0" max="10000" step="100" value="125"></div>
+        <div class="animation-choice-row"><label for="dial-phone-enabled">Zoom in page elements</label><label class="visibility-option"><input type="checkbox" id="dial-phone-enabled" aria-label="Enable Zoom in page elements"></label></div>
+        <div class="animations-separator" aria-hidden="true"></div>
+        <div class="font-setting"><label for="dial-phone-duration">Zoom in duration</label><output class="range-value" id="dial-phone-duration-value" for="dial-phone-duration"></output><input type="range" id="dial-phone-duration" min="100" max="1200" step="25" value="350"></div>
+      </section>
+      <div class="controls-divider"></div>
+      <section class="dial-settings" aria-label="Layout da grelha de dials">
+        <strong class="settings-heading"><span class="section-icon" aria-hidden="true">▦</span>Layout da grelha de dials</strong>
+        <div class="font-setting"><label for="dial-columns">Número de colunas</label><select id="dial-columns"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>
+        <div class="font-setting"><label for="dial-rows">Número de linhas</label><select id="dial-rows"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>
+        <div class="font-setting"><label for="dial-max-width">Largura da grelha</label><output class="range-value" id="dial-max-width-value" for="dial-max-width"></output><input type="range" id="dial-max-width" min="100" max="3840" step="10" value="800"></div>
+        <div class="font-setting"><label for="dial-grid-height">Altura da grelha</label><output class="range-value" id="dial-grid-height-value" for="dial-grid-height"></output><input type="range" id="dial-grid-height" min="100" max="1600" step="10" value="400"></div>
+        <div class="font-setting"><label for="dial-grid-lines-opacity">Opacidade das linhas da grelha</label><output class="range-value" id="dial-grid-lines-opacity-value" for="dial-grid-lines-opacity"></output><input type="range" id="dial-grid-lines-opacity" min="0" max="100" step="1" value="0"></div>
+      </section>
+      <div class="controls-divider"></div>
+      <section class="dial-settings" aria-label="Aparência dos dials">
+        <strong class="settings-heading"><span class="section-icon" aria-hidden="true">◐</span>Aparência dos dials</strong>
+        <div class="font-setting"><label for="dial-shape">Forma dos dials</label><output class="range-value" id="dial-shape-value" for="dial-shape"></output><input type="range" id="dial-shape" min="0" max="100" step="1" value="0"></div>
+        <div class="font-setting"><label for="dial-favicon-shape">Forma dos favicons</label><output class="range-value" id="dial-favicon-shape-value" for="dial-favicon-shape"></output><input type="range" id="dial-favicon-shape" min="0" max="100" step="1" value="0"></div>
+        <div class="font-setting"><label for="dial-title-gap">Distância título/ícone</label><output class="range-value" id="dial-title-gap-value" for="dial-title-gap"></output><input type="range" id="dial-title-gap" min="-10" max="10" step="1" value="0"></div>
+        <div class="font-setting"><label for="dial-icon-size">Tamanho dos ícones</label><output class="range-value" id="dial-icon-size-value" for="dial-icon-size"></output><input type="range" id="dial-icon-size" min="10" max="400" step="1" value="64"></div>
+        <div class="font-setting"><label for="dial-favicon-size">Tamanho dos favicons</label><output class="range-value" id="dial-favicon-size-value" for="dial-favicon-size"></output><input type="range" id="dial-favicon-size" min="8" max="400" step="1" value="48"></div>
+        <div class="font-setting"><label for="dial-background-color">Dial background color</label><input type="color" id="dial-background-color" value="#ffffff"></div>
+        <div class="font-setting"><label for="dial-border-color">Cor do limite do dial</label><input type="color" id="dial-border-color" value="#8b8b95"></div>
+        <div class="font-setting"><label for="dial-border-thickness">Espessura do limite</label><output class="range-value" id="dial-border-thickness-value" for="dial-border-thickness"></output><input type="range" id="dial-border-thickness" min="0" max="10" step="1" value="0"></div>
+        <div class="font-setting"><label for="dial-border-opacity">Opacidade do limite</label><output class="range-value" id="dial-border-opacity-value" for="dial-border-opacity"></output><input type="range" id="dial-border-opacity" min="0" max="100" step="1" value="100"></div>
+        <div class="font-setting"><label for="dial-title-font-family">Tipo de letra</label><select id="dial-title-font-family"><option value="system">Sistema</option><option value="Arial, Helvetica, sans-serif">Arial</option><option value="Verdana, Geneva, sans-serif">Verdana</option><option value="Tahoma, Geneva, sans-serif">Tahoma</option><option value="'Trebuchet MS', sans-serif">Trebuchet MS</option><option value="'Segoe UI', Tahoma, sans-serif">Segoe UI</option><option value="Roboto, Arial, sans-serif">Roboto</option><option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica Neue</option><option value="Georgia, serif">Georgia</option><option value="'Times New Roman', Times, serif">Times New Roman</option><option value="Palatino, 'Palatino Linotype', serif">Palatino</option><option value="'Courier New', monospace">Courier New</option><option value="Consolas, monospace">Consolas</option><option value="'Arial Narrow', 'Roboto Condensed', sans-serif">Estreita (narrow)</option><option value="Impact, Haettenschweiler, sans-serif">Impact</option><option value="'Comic Sans MS', cursive">Comic Sans MS</option></select></div>
+        <div class="font-setting"><label for="dial-title-size">Tamanho</label><input type="number" id="dial-title-size" min="8" max="24" value="12"></div>
+        <div class="font-setting"><label for="dial-title-color">Cor dos títulos</label><input type="color" id="dial-title-color" value="#1d1d1f"></div>
+        <div class="font-setting"><label for="dial-icon-glow-color">Cor do glow dos ícones</label><input type="color" id="dial-icon-glow-color" value="#9b5de5"></div>
+        <div class="font-setting"><label for="dial-icon-glow-opacity">Intensidade do glow dos ícones</label><output class="range-value" id="dial-icon-glow-opacity-value" for="dial-icon-glow-opacity"></output><input type="range" id="dial-icon-glow-opacity" min="0" max="100" step="1" value="45"></div>
+        <div class="font-setting"><label for="dial-icon-glow-size">Tamanho do glow dos ícones</label><output class="range-value" id="dial-icon-glow-size-value" for="dial-icon-glow-size"></output><input type="range" id="dial-icon-glow-size" min="0" max="30" step="1" value="8"></div>
+      </section>
+      <section class="clock-settings" aria-label="Clock and date settings">
+        <strong class="settings-heading section-toggle-heading"><span class="section-icon" aria-hidden="true">🕒</span>Clock and date</strong>
+        <div class="font-setting"><label for="hide-clock">Show clock</label><input type="checkbox" id="hide-clock" checked aria-label="Show clock"></div>
+        <div class="font-setting"><label for="hide-date">Show date</label><input type="checkbox" id="hide-date" checked aria-label="Show date"></div>
+        <div class="font-setting"><label for="date-order">Date position</label><select id="date-order"><option value="below">Below the clock</option><option value="above">Above the clock</option></select></div>
+        <div class="font-setting"><label for="clock-date-distance">Distance between date and clock</label><output class="range-value" id="clock-date-distance-value" for="clock-date-distance"></output><input id="clock-date-distance" type="range" min="-10" max="10" step="1" value="0"></div>
+        <div class="font-setting"><label for="clock-24-hour">24-hour clock</label><input id="clock-24-hour" type="checkbox" role="switch" aria-label="24-hour clock"></div>
+        <div class="font-setting"><label for="clock-color">Clock colour</label><input id="clock-color" type="color" value="#1d1d1f"></div>
+        <div class="font-setting"><label for="clock-font-family">Clock font</label><select id="clock-font-family"><option value="system">Sistema</option><option value="Arial, Helvetica, sans-serif">Arial</option><option value="Verdana, Geneva, sans-serif">Verdana</option><option value="Tahoma, Geneva, sans-serif">Tahoma</option><option value="'Trebuchet MS', sans-serif">Trebuchet MS</option><option value="'Segoe UI', Tahoma, sans-serif">Segoe UI</option><option value="Roboto, Arial, sans-serif">Roboto</option><option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica Neue</option><option value="Georgia, serif">Georgia</option><option value="'Times New Roman', Times, serif">Times New Roman</option><option value="Palatino, 'Palatino Linotype', serif">Palatino</option><option value="'Courier New', monospace">Courier New</option><option value="Consolas, monospace">Consolas</option><option value="'Arial Narrow', 'Roboto Condensed', sans-serif">Estreita (narrow)</option><option value="Impact, Haettenschweiler, sans-serif">Impact</option><option value="'Comic Sans MS', cursive">Comic Sans MS</option></select></div><div class="font-setting"><label for="clock-font-size">Tamanho</label><input id="clock-font-size" type="number" min="24" max="180" value="82"></div><div class="font-setting"><label for="clock-font-weight">Aspeto</label><select id="clock-font-weight"><option value="300">Fino</option><option value="400">Normal</option><option value="500">Médio</option><option value="600">Seminegrito</option><option value="700">Negrito</option><option value="800">Extra negrito</option></select></div><div class="font-setting"><label for="date-color">Cor da data</label><input id="date-color" type="color" value="#68686d"></div><div class="font-setting"><label for="date-font-family">Tipo de letra</label><select id="date-font-family"><option value="system">Sistema</option><option value="Arial, Helvetica, sans-serif">Arial</option><option value="Verdana, Geneva, sans-serif">Verdana</option><option value="Tahoma, Geneva, sans-serif">Tahoma</option><option value="'Trebuchet MS', sans-serif">Trebuchet MS</option><option value="'Segoe UI', Tahoma, sans-serif">Segoe UI</option><option value="Roboto, Arial, sans-serif">Roboto</option><option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica Neue</option><option value="Georgia, serif">Georgia</option><option value="'Times New Roman', Times, serif">Times New Roman</option><option value="Palatino, 'Palatino Linotype', serif">Palatino</option><option value="'Courier New', monospace">Courier New</option><option value="Consolas, monospace">Consolas</option><option value="'Arial Narrow', 'Roboto Condensed', sans-serif">Estreita (narrow)</option><option value="Impact, Haettenschweiler, sans-serif">Impact</option><option value="'Comic Sans MS', cursive">Comic Sans MS</option></select></div><div class="font-setting"><label for="date-font-size">Tamanho</label><input id="date-font-size" type="number" min="10" max="60" value="17"></div><div class="font-setting"><label for="date-font-weight">Aspeto</label><select id="date-font-weight"><option value="300">Fino</option><option value="400" selected>Normal</option><option value="500">Médio</option><option value="600">Seminegrito</option><option value="700">Negrito</option><option value="800">Extra negrito</option></select></div>
+        <div class="font-setting"><label>Text alignment</label><div class="clock-alignment-options" role="group" aria-label="Clock and date text alignment"><button type="button" class="clock-alignment-option" data-clock-alignment="left">Left</button><button type="button" class="clock-alignment-option" data-clock-alignment="center">Middle</button><button type="button" class="clock-alignment-option" data-clock-alignment="right">Right</button></div></div>
+        <div class="font-setting clock-position-setting"><label>Position</label><div class="position-presets" role="group" aria-label="Clock and date position presets"><button type="button" class="position-preset" data-position-group="clock-horizontal" data-position="top-left" title="Top left" aria-label="Top left">↖</button><button type="button" class="position-preset" data-position-group="clock-horizontal" data-position="top-middle" title="Top middle" aria-label="Top middle">↑</button><button type="button" class="position-preset" data-position-group="clock-horizontal" data-position="top-right" title="Top right" aria-label="Top right">↗</button><button type="button" class="position-preset" data-position-group="clock-horizontal" data-position="bottom-left" title="Bottom left" aria-label="Bottom left">↙</button><button type="button" class="position-preset" data-position-group="clock-horizontal" data-position="bottom-middle" title="Bottom middle" aria-label="Bottom middle">↓</button><button type="button" class="position-preset" data-position-group="clock-horizontal" data-position="bottom-right" title="Bottom right" aria-label="Bottom right">↘</button></div></div>
+        <div class="font-setting"><label for="clock-vertical">Vertical position</label><output class="range-value" id="clock-vertical-value" for="clock-vertical"></output><input id="clock-vertical" type="range" min="-1920" max="1920" step="1" value="0"></div>
+        <div class="font-setting"><label for="clock-horizontal">Horizontal position</label><output class="range-value" id="clock-horizontal-value" for="clock-horizontal"></output><input id="clock-horizontal" class="middle-sticky-range" type="range" min="-1920" max="1920" step="1" value="0"><span class="middle-sticky-label">Middle</span></div>
+      </section>
+      <section class="button-settings" aria-label='Settings'>
+        <strong class="settings-heading"><span class="section-icon" aria-hidden="true">⚙️</span>Settings button</strong>
+        <div class="font-setting"><label for="button-label">Button text</label><input id="button-label" type="text" maxlength="60" value="Settings" placeholder="Settings"></div>
+
+        <div class="font-setting"><label for="button-width">Comprimento</label><output class="range-value" id="button-width-value" for="button-width"></output><input id="button-width" type="range" min="80" max="400" step="1" value="120"></div>
+        <div class="font-setting"><label for="button-height">Altura</label><output class="range-value" id="button-height-value" for="button-height"></output><input id="button-height" type="range" min="30" max="160" step="1" value="40"></div>
+        <div class="font-setting"><label for="button-shape">Shape</label><output class="range-value" id="button-shape-value" for="button-shape"></output><input id="button-shape" type="range" min="0" max="100" step="1" value="50"></div>
+        <div class="font-setting"><label for="button-opacity">Opacity</label><output class="range-value" id="button-opacity-value" for="button-opacity">100%</output><input id="button-opacity" type="range" min="0" max="100" step="1" value="100"></div>
+        <div class="font-setting"><label for="button-background-color">Background color</label><input id="button-background-color" type="color" value="#f2f2f3"></div>
+        
+        <div class="font-setting"><label for="button-font-family">Tipo de letra</label><select id="button-font-family"><option value="system">Sistema</option><option value="Arial, Helvetica, sans-serif">Arial</option><option value="Verdana, Geneva, sans-serif">Verdana</option><option value="Tahoma, Geneva, sans-serif">Tahoma</option><option value="'Trebuchet MS', sans-serif">Trebuchet MS</option><option value="'Segoe UI', Tahoma, sans-serif">Segoe UI</option><option value="Roboto, Arial, sans-serif">Roboto</option><option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica Neue</option><option value="Georgia, serif">Georgia</option><option value="'Times New Roman', Times, serif">Times New Roman</option><option value="Palatino, 'Palatino Linotype', serif">Palatino</option><option value="'Courier New', monospace">Courier New</option><option value="Consolas, monospace">Consolas</option><option value="'Arial Narrow', 'Roboto Condensed', sans-serif">Estreita (narrow)</option><option value="Impact, Haettenschweiler, sans-serif">Impact</option><option value="'Comic Sans MS', cursive">Comic Sans MS</option></select></div>
+        <div class="font-setting"><label for="button-font-size">Tamanho</label><input id="button-font-size" type="number" min="9" max="28" value="13"></div>
+        <div class="font-setting"><label for="button-font-color">Cor da letra</label><input id="button-font-color" type="color" value="#1d1d1f"></div>
+        <div class="font-setting"><label for="button-glow-size">Tamanho do glow</label><output class="range-value" id="button-glow-size-value" for="button-glow-size"></output><input id="button-glow-size" type="range" min="0" max="60" step="1" value="16"></div>
+        <div class="font-setting"><label for="button-glow-opacity">Opacidade do glow</label><output class="range-value" id="button-glow-opacity-value" for="button-glow-opacity"></output><input id="button-glow-opacity" type="range" min="0" max="100" step="1" value="45"></div>
+        <div class="font-setting"><label for="button-glow-color">Cor do glow de fundo</label><input id="button-glow-color" type="color" value="#9b5de5"></div>
+        <div class="font-setting"><label>Position</label><div class="position-presets" role="group" aria-label="Settings button position presets"><button type="button" class="position-preset" data-position-group="button-horizontal" data-position="top-left" title="Top left" aria-label="Top left">↖</button><button type="button" class="position-preset" data-position-group="button-horizontal" data-position="top-middle" title="Top middle" aria-label="Top middle">↑</button><button type="button" class="position-preset" data-position-group="button-horizontal" data-position="top-right" title="Top right" aria-label="Top right">↗</button><button type="button" class="position-preset" data-position-group="button-horizontal" data-position="bottom-left" title="Bottom left" aria-label="Bottom left">↙</button><button type="button" class="position-preset" data-position-group="button-horizontal" data-position="bottom-middle" title="Bottom middle" aria-label="Bottom middle">↓</button><button type="button" class="position-preset" data-position-group="button-horizontal" data-position="bottom-right" title="Bottom right" aria-label="Bottom right">↘</button></div></div>
+        <div class="font-setting"><label for="button-vertical">Vertical position</label><output class="range-value" id="button-vertical-value" for="button-vertical"></output><input id="button-vertical" type="range" min="-1920" max="1920" step="1" value="0"></div><div class="font-setting"><label for="button-horizontal">Horizontal position</label><output class="range-value" id="button-horizontal-value" for="button-horizontal"></output><input id="button-horizontal" class="middle-sticky-range" type="range" min="-1920" max="1920" step="1" value="0"><span class="middle-sticky-label">Middle</span></div>
+      </section>
+
+      <div class="controls-divider"></div>
+      <section class="separator-settings" aria-label="Separador entre o relógio/data e os dials">
+        <strong class="settings-heading"><span class="section-icon" aria-hidden="true">━</span>Separador entre o relógio/data e os dials</strong>
+        <div class="font-setting"><label for="separator-color">Cor do separador</label><input id="separator-color" type="color" value="#8b8b95"></div>
+        <div class="font-setting"><label for="separator-opacity">Opacidade</label><output class="range-value" id="separator-opacity-value" for="separator-opacity"></output><input id="separator-opacity" type="range" min="0" max="100" step="1" value="55"></div>
+        <div class="font-setting"><label for="separator-thickness">Espessura</label><output class="range-value" id="separator-thickness-value" for="separator-thickness"></output><input id="separator-thickness" type="range" min="1" max="12" step="1" value="2"></div>
+        <div class="font-setting"><label for="separator-vertical">Posição</label><output class="range-value" id="separator-vertical-value" for="separator-vertical"></output><input id="separator-vertical" type="range" min="-300" max="300" step="1" value="0"></div>
+      </section>
+      <div class="controls-divider"></div>
+      <section class="separator-settings" aria-label='Separator between dials and Settings'>
+        <strong class="settings-heading"><span class="section-icon" aria-hidden="true">━</span>Separator between dials and Settings</strong>
+        <div class="font-setting"><label for="dial-button-separator-color">Cor do separador</label><input id="dial-button-separator-color" type="color" value="#8b8b95"></div>
+        <div class="font-setting"><label for="dial-button-separator-opacity">Opacidade</label><output class="range-value" id="dial-button-separator-opacity-value" for="dial-button-separator-opacity"></output><input id="dial-button-separator-opacity" type="range" min="0" max="100" step="1" value="55"></div>
+        <div class="font-setting"><label for="dial-button-separator-thickness">Espessura</label><output class="range-value" id="dial-button-separator-thickness-value" for="dial-button-separator-thickness"></output><input id="dial-button-separator-thickness" type="range" min="1" max="12" step="1" value="2"></div>
+        <div class="font-setting"><label for="dial-button-separator-vertical">Posição</label><output class="range-value" id="dial-button-separator-vertical-value" for="dial-button-separator-vertical"></output><input id="dial-button-separator-vertical" type="range" min="-300" max="300" step="1" value="0"></div>
+      </section>
+
+
+    </aside>
+
+    <!-- Modal for adding/editing shortcuts -->
+    <div id="edit-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Editar atalho">
+      <div class="modal-content">
+        <h2 id="modal-title">Editar atalho</h2>
+        <div class="modal-field">
+          <label for="modal-name">Nome</label>
+          <input type="text" id="modal-name" placeholder="Introduza o nome" autocomplete="off" maxlength="60">
+        </div>
+        <div class="modal-field">
+          <label for="modal-url">Endereço (URL)</label>
+          <input type="text" id="modal-url" placeholder="Introduza o URL" autocomplete="off">
+        </div>
+        <div class="modal-buttons">
+          <button id="modal-cancel" type="button">Cancelar</button>
+          <button id="modal-done" type="button">Concluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="locales.js"></script>
+  <script src="newtab.js"></script>
+  <script src="color-pickers.js"></script>
+</body>
+</html>

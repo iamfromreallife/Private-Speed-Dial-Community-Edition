@@ -1,0 +1,31 @@
+{
+  "update_url": "https://clients2.google.com/service/update2/crx",
+  "manifest_version": 3,
+  "name": "Private Speed Dial CE",
+  "version": "1.0",
+  "description": "Open-source, customizable new-tab page with a private shortcut grid.",
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "tabs"
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "short_name": "Private Speed Dial CE",
+  "host_permissions": [
+    "https://suggestqueries.google.com/*",
+    "https://www.google.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "optional_host_permissions": [
+    "<all_urls>"
+  ]
+}
