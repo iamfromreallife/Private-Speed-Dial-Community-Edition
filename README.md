@@ -6,12 +6,12 @@ An open-source new-tab page with a customizable shortcut grid, clock and date, s
 
 Private Speed Dial CE contains no Pro licensing whatsoever. Pro features are not available in this version:
 
-. Settings exporting and importing
-. Import dials from a browser bookmarks folder
-. Dark theme
-. Pre-included background images
-. Choosing a background from a user's PC
-. Preset layouts
+-  Settings exporting and importing
+-  Import dials from a browser bookmarks folder
+-  Dark theme
+-  Pre-included background images
+-  Choosing a background from a user's PC
+-  Preset layouts
 
 ## Install locally
 
