@@ -1175,7 +1175,7 @@ function applyDarkTheme(enabled) {
 
   function saveClockPreferences() {
     const prefs = {
-      darkTheme: Boolean(darkThemeToggle?.checked),
+      darkTheme: Boolean(document.getElementById('dark-theme-toggle')?.checked),
       clockFontFamily: clockFontFamily.value, clockFontSize: Number(clockFontSize.value) || 82, clockFontWeight: Number(clockFontWeight.value) || 300,
       dateFontFamily: dateFontFamily.value, dateFontSize: Number(dateFontSize.value) || 17, dateFontWeight: Number(dateFontWeight.value) || 400,
       hideClock: !document.getElementById('hide-clock')?.checked, hideDate: !document.getElementById('hide-date')?.checked, clock24Hour: Boolean(clock24HourInput?.checked), clockColor: clockColor.value, dateColor: dateColor.value, separatorColor: separatorColor?.value || '#8b8b95', separatorOpacity: Number(separatorOpacity?.value ?? 55), separatorThickness: Number(separatorThickness?.value ?? 2), separatorVertical: Number(separatorVertical?.value ?? 0), dialButtonSeparatorColor: dialButtonSeparatorColor?.value || '#8b8b95', dialButtonSeparatorOpacity: Number(dialButtonSeparatorOpacity?.value ?? 55), dialButtonSeparatorThickness: Number(dialButtonSeparatorThickness?.value ?? 2), dialButtonSeparatorVertical: Number(dialButtonSeparatorVertical?.value ?? 0), clockVertical: Number(clockVertical.value) || 0, clockHorizontal: Number(clockHorizontal?.value ?? 0), dateOrder: dateOrderInput?.value || 'below', clockAlignment: document.querySelector('.clock-alignment-option.active')?.dataset.clockAlignment || 'left', clockDateDistance: Number(clockDateDistanceInput?.value ?? 8), buttonHorizontal: Number(buttonHorizontal?.value ?? 0), buttonVertical: Number(buttonVertical.value) || 0, buttonLabel: buttonLabelCustom && buttonLabel ? buttonLabel.value.slice(0, 60) : '', buttonLabelCustom: Boolean(buttonLabelCustom && buttonLabel?.value.trim()), buttonWidth: Number(buttonWidth?.value ?? 120), buttonHeight: Number(buttonHeight?.value ?? 40), buttonShape: Number(buttonShape?.value ?? 50), buttonOpacity: Number(buttonOpacity?.value ?? 100), buttonBackgroundColor: buttonBackgroundColor?.value || '#f2f2f3',
@@ -2084,6 +2084,40 @@ function applyDarkTheme(enabled) {
     applyGlowSettings(glowColorPicker?.value || '#a8c7fa', Number(glowOpacityInput.value), true);
   });
 
+  // Keep the clock/date controls connected in the Community Edition too.
+  // These listeners were missing from a previous CE cleanup, so the controls
+  // appeared in Settings but did not update the page or persist their values.
+  ['hide-clock', 'hide-date'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', saveClockPreferences);
+  });
+  clock24HourInput?.addEventListener('change', () => {
+    updateClock();
+    saveClockPreferences();
+  });
+  [dateOrderInput, clockDateDistanceInput].forEach(input => {
+    input?.addEventListener('input', saveClockPreferences);
+    input?.addEventListener('change', saveClockPreferences);
+  });
+  document.querySelectorAll('[data-clock-alignment]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-clock-alignment]').forEach(alignmentBtn => {
+        const active = alignmentBtn === btn;
+        alignmentBtn.classList.toggle('active', active);
+        alignmentBtn.setAttribute('aria-pressed', String(active));
+      });
+      saveClockPreferences();
+    });
+  });
+  clockVertical?.addEventListener('input', () => {
+    if (clockWidget) {
+      clockWidget.style.setProperty(
+        'transform',
+        `translate(${Number(clockHorizontal?.value) || 0}px, ${Number(clockVertical.value) || 0}px)`,
+        'important'
+      );
+    }
+    saveClockPreferences();
+  });
 
   // Modal handlers
   // Enter em qualquer campo do popup aplica imediatamente as alterações.

@@ -3,7 +3,7 @@
   "manifest_version": 3,
   "name": "Private Speed Dial CE",
   "version": "1.0.1",
-  "description": "Open-source customizable new-tab page with shortcuts; searches respect Chrome's default provider.",
+  "description": "Fully customizable, fast and private Speed Dial for all your favourite websites.",
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
