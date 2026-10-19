@@ -2222,3 +2222,12 @@ body.dark-theme #controls-panel .reset-all-settings-button:hover:not(:disabled) 
   border-color: #4b0000 !important;
 }
 
+
+/* Keep the support emoji aligned with the translated donation label. */
+.donate-prayer { display:inline-block; margin-left:3px; white-space:nowrap; }
+
+/* Donation label displayed below the support-development text. */
+#controls-panel .donate-button { display:flex !important; flex-direction:column !important; align-items:flex-start !important; justify-content:center !important; gap:2px !important; }
+#controls-panel .donate-primary { display:block !important; }
+#controls-panel .donate-secondary { display:block !important; color:#1769e0 !important; font-size:70% !important; font-weight:600 !important; line-height:1.1 !important; }
+#controls-panel .donate-button:hover .donate-secondary { color:#0b4eae !important; }

@@ -160,6 +160,7 @@
     "Donate": {pt:"Doar",es:"Donar",fr:"Faire un don",de:"Spenden"},
     "to help development": {pt:"para ajudar no desenvolvimento",es:"para ayudar al desarrollo",fr:"pour aider au développement",de:"um die Entwicklung zu unterstützen"},
     "Support development": {pt:"Apoiar o desenvolvimento",es:"Apoyar el desarrollo",fr:"Soutenir le développement",de:"Entwicklung unterstützen"},
+    "Donation": {pt:"Doação",es:"Donación",fr:"Don",de:"Spende"},
     "Weather city": {pt:"Cidade para a meteorologia",es:"Ciudad del tiempo",fr:"Ville météo",de:"Wetterstadt"},
     "Weather update interval": {pt:"Intervalo de atualização meteorológica",es:"Intervalo de actualización meteorológica",fr:"Intervalle de mise à jour météo",de:"Wetter-Aktualisierungsintervall"},
     "e.g. London": {pt:"ex.: Londres",es:"p. ej., Londres",fr:"ex. : Londres",de:"z. B. London"},
@@ -186,7 +187,8 @@
     "Forecast unavailable": {pt:"Previsão indisponível",es:"Pronóstico no disponible",fr:"Prévisions indisponibles",de:"Vorhersage nicht verfügbar"},
     "Data from Open-Meteo": {pt:"Dados meteorológicos: Open-Meteo",es:"Datos meteorológicos: Open-Meteo",fr:"Données météo : Open-Meteo",de:"Wetterdaten: Open-Meteo"},
     "Refresh weather": {pt:"Atualizar meteorologia",es:"Actualizar el tiempo",fr:"Actualiser la météo",de:"Wetter aktualisieren"},
-    "No cities found": {pt:"Não foram encontradas cidades",es:"No se encontraron ciudades",fr:"Aucune ville trouvée",de:"Keine Städte gefunden"}
+    "No cities found": {pt:"Não foram encontradas cidades",es:"No se encontraron ciudades",fr:"Aucune ville trouvée",de:"Keine Städte gefunden"},
+    "City suggestions unavailable": {pt:"Sugestões de cidades indisponíveis",es:"Sugerencias de ciudades no disponibles",fr:"Suggestions de villes indisponibles",de:"Stadtvorschläge nicht verfügbar"}
   };
   // Supplemental runtime coverage for labels that were still authored directly in English.
   Object.assign(englishUiTranslations, {
