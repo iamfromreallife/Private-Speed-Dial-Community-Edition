@@ -2,15 +2,16 @@
   "update_url": "https://clients2.google.com/service/update2/crx",
   "manifest_version": 3,
   "name": "Private Speed Dial CE",
-  "version": "1.0",
-  "description": "Open-source, customizable new-tab page with a private shortcut grid.",
+  "version": "1.0.1",
+  "description": "Open-source customizable new-tab page with shortcuts; searches respect Chrome's default provider.",
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
   "permissions": [
     "storage",
     "unlimitedStorage",
-    "tabs"
+    "tabs",
+    "search"
   ],
   "icons": {
     "16": "icon16.png",
@@ -19,8 +20,6 @@
   },
   "short_name": "Private Speed Dial CE",
   "host_permissions": [
-    "https://suggestqueries.google.com/*",
-    "https://www.google.com/*",
     "https://geocoding-api.open-meteo.com/*",
     "https://api.open-meteo.com/*"
   ],

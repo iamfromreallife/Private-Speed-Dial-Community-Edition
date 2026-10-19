@@ -1,4 +1,70 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Reset preferences to bundled defaults while keeping Pro entitlement records intact.
+  const resetAllSettingsButton = document.getElementById('reset-all-settings-btn');
+  resetAllSettingsButton?.addEventListener('click', async () => {
+    const translateResetText = (key) => window.PrivateSpeedDialI18n?.t?.(key) || key;
+    if (!window.confirm(translateResetText("Reset all settings to the defaults? This will replace your current settings and shortcuts."))) return;
+
+    resetAllSettingsButton.disabled = true;
+    resetAllSettingsButton.setAttribute('aria-busy', 'true');
+    try {
+      const response = await fetch(chrome.runtime.getURL('defaults.json'), { cache: 'no-store' });
+      if (!response.ok) throw new Error('Could not load defaults.json');
+      const defaults = await response.json();
+      if (!defaults || typeof defaults !== 'object' || Array.isArray(defaults)) {
+        throw new Error('The defaults file is invalid');
+      }
+
+      const existing = await new Promise((resolve, reject) => {
+        chrome.storage.local.get(null, (items) => {
+          const error = chrome.runtime.lastError;
+          if (error) reject(new Error(error.message));
+          else resolve(items || {});
+        });
+      });
+      // ExtensionPay owns these records; a preference reset must not reset purchase status.
+      const preservedPurchaseData = Object.fromEntries(
+        Object.entries(existing).filter(([key]) => key.startsWith('extensionpay_'))
+      );
+      // Remove settings, cached weather data and custom image keys absent from defaults.json.
+      const obsoleteKeys = Object.keys(existing).filter((key) =>
+        !Object.prototype.hasOwnProperty.call(defaults, key) && !key.startsWith('extensionpay_')
+      );
+      if (obsoleteKeys.length) {
+        await new Promise((resolve, reject) => {
+          chrome.storage.local.remove(obsoleteKeys, () => {
+            const error = chrome.runtime.lastError;
+            if (error) reject(new Error(error.message));
+            else resolve();
+          });
+        });
+      }
+      await new Promise((resolve, reject) => {
+        chrome.storage.local.set({ ...defaults, ...preservedPurchaseData, __speedDialDefaultsApplied: true }, () => {
+          const error = chrome.runtime.lastError;
+          if (error) reject(new Error(error.message));
+          else resolve();
+        });
+      });
+
+      // Clear startup visual hints so they cannot override default appearance before reload.
+      try {
+        [
+          'psd-dark-theme-hint',
+          'psd-bg-mode-hint',
+          'psd-bg-color-hint',
+          'psd-custom-bg-image-hint'
+        ].forEach((key) => localStorage.removeItem(key));
+      } catch (_) {}
+
+      window.location.reload();
+    } catch (error) {
+      console.error('Could not reset settings:', error);
+      window.alert(translateResetText('Could not reset settings. Please try again.'));
+      resetAllSettingsButton.disabled = false;
+      resetAllSettingsButton.removeAttribute('aria-busy');
+    }
+  });
   // Chrome Sync tem limites de escrita por minuto. Agrupa alterações rápidas
   // dos controlos e trata os erros através do callback para evitar rejeições
   // não tratadas quando o limite é atingido.
@@ -14,9 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Search bar preferences are stored independently and applied on every new tab.
   const searchbar = document.getElementById('page-searchbar');
   const searchbarInput = document.getElementById('page-search-input');
-  const searchbarIds = ['searchbar-enabled','searchbar-engine','searchbar-width','searchbar-height','searchbar-shape','searchbar-opacity','searchbar-color','searchbar-limit-color','searchbar-glow-color','searchbar-glow-size','searchbar-glow-opacity','searchbar-vertical','searchbar-horizontal','searchbar-font-family','searchbar-font-size','searchbar-font-weight','searchbar-font-color'];
-  const searchbarDefaults = {searchbarEnabled:false,searchbarEngine:'google',searchbarWidth:560,searchbarHeight:44,searchbarShape:100,searchbarOpacity:100,searchbarColor:'#ffffff',searchbarLimitColor:'#d2d2d7',searchbarGlowColor:'#9b5de5',searchbarGlowSize:12,searchbarGlowOpacity:20,searchbarVertical:0,searchbarHorizontal:0,searchbarFontFamily:'system',searchbarFontSize:16,searchbarFontWeight:'400',searchbarFontColor:'#1d1d1f'};
-  const searchbarMap = {'searchbar-enabled':'searchbarEnabled','searchbar-engine':'searchbarEngine','searchbar-width':'searchbarWidth','searchbar-height':'searchbarHeight','searchbar-shape':'searchbarShape','searchbar-opacity':'searchbarOpacity','searchbar-color':'searchbarColor','searchbar-limit-color':'searchbarLimitColor','searchbar-glow-color':'searchbarGlowColor','searchbar-glow-size':'searchbarGlowSize','searchbar-glow-opacity':'searchbarGlowOpacity','searchbar-vertical':'searchbarVertical','searchbar-horizontal':'searchbarHorizontal','searchbar-font-family':'searchbarFontFamily','searchbar-font-size':'searchbarFontSize','searchbar-font-weight':'searchbarFontWeight','searchbar-font-color':'searchbarFontColor'};
+  const searchbarIds = ['searchbar-enabled','searchbar-width','searchbar-height','searchbar-shape','searchbar-opacity','searchbar-color','searchbar-limit-color','searchbar-glow-color','searchbar-glow-size','searchbar-glow-opacity','searchbar-vertical','searchbar-horizontal','searchbar-font-family','searchbar-font-size','searchbar-font-weight','searchbar-font-color'];
+  const searchbarDefaults = {searchbarEnabled:false,searchbarWidth:560,searchbarHeight:44,searchbarShape:100,searchbarOpacity:100,searchbarColor:'#ffffff',searchbarLimitColor:'#d2d2d7',searchbarGlowColor:'#9b5de5',searchbarGlowSize:12,searchbarGlowOpacity:20,searchbarVertical:0,searchbarHorizontal:0,searchbarFontFamily:'system',searchbarFontSize:16,searchbarFontWeight:'400',searchbarFontColor:'#1d1d1f'};
+  const searchbarMap = {'searchbar-enabled':'searchbarEnabled','searchbar-width':'searchbarWidth','searchbar-height':'searchbarHeight','searchbar-shape':'searchbarShape','searchbar-opacity':'searchbarOpacity','searchbar-color':'searchbarColor','searchbar-limit-color':'searchbarLimitColor','searchbar-glow-color':'searchbarGlowColor','searchbar-glow-size':'searchbarGlowSize','searchbar-glow-opacity':'searchbarGlowOpacity','searchbar-vertical':'searchbarVertical','searchbar-horizontal':'searchbarHorizontal','searchbar-font-family':'searchbarFontFamily','searchbar-font-size':'searchbarFontSize','searchbar-font-weight':'searchbarFontWeight','searchbar-font-color':'searchbarFontColor'};
   function luminance(hex) {
     const raw = String(hex || '#ffffff').replace('#','');
     if (!/^[0-9a-f]{6}$/i.test(raw)) return 1;
@@ -66,7 +132,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   chrome.storage.local.get(Object.keys(searchbarDefaults), applySearchbar);
   searchbarIds.forEach(id => { const el=document.getElementById(id); if(!el) return; el.addEventListener('input', () => { const key=searchbarMap[id]; const value=el.type==='checkbox' ? el.checked : (el.type==='range'||el.type==='number' ? Number(el.value) : el.value); if (key === 'searchbarColor') { const autoText = contrastingText(value); const textPicker = document.getElementById('searchbar-font-color'); if (textPicker) textPicker.value = autoText; safeSyncSet({[key]:value, searchbarFontColor:autoText}); } else { safeSyncSet({[key]:value}); } chrome.storage.local.get(Object.keys(searchbarDefaults), applySearchbar); }); el.addEventListener('change', () => { const key=searchbarMap[id]; const value=el.type==='checkbox' ? el.checked : (el.type==='range'||el.type==='number' ? Number(el.value) : el.value); if (key === 'searchbarColor') { const autoText = contrastingText(value); const textPicker = document.getElementById('searchbar-font-color'); if (textPicker) textPicker.value = autoText; safeSyncSet({[key]:value, searchbarFontColor:autoText}); } else { safeSyncSet({[key]:value}); } chrome.storage.local.get(Object.keys(searchbarDefaults), applySearchbar); }); });
-  searchbar?.addEventListener('submit', e => { e.preventDefault(); const q=searchbarInput?.value.trim(); if(!q) return; const engines={google:'https://www.google.com/search?q=',bing:'https://www.bing.com/search?q=',duckduckgo:'https://duckduckgo.com/?q=',yahoo:'https://search.yahoo.com/search?p=',brave:'https://search.brave.com/search?q=',ecosia:'https://www.ecosia.org/search?q=',startpage:'https://www.startpage.com/sp/search?query='}; chrome.storage.local.get(['searchbarEngine'], r => { const base=engines[r.searchbarEngine||'google']||engines.google; window.location.href=base+encodeURIComponent(q); }); });
+  searchbar?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const query = searchbarInput?.value.trim();
+    if (!query) return;
+    // Submit through Chrome's Search API so Chrome's existing default provider is respected.
+    try {
+      if (!chrome.search?.query) throw new Error('Chrome Search API is unavailable.');
+      await chrome.search.query({ text: query, disposition: 'CURRENT_TAB' });
+    } catch (error) {
+      // Do not fall back to a hard-coded search URL, which would override the user's provider.
+      console.error('Could not submit search through Chrome’s default provider:', error);
+    }
+  });
 document.addEventListener('DOMContentLoaded', () => {
   // Weather indicator with cached current conditions and 7-day forecast.
   const weatherWidget=document.getElementById('searchbar-weather'), weatherCityLabel=weatherWidget?.querySelector('.weather-city'), weatherIcon=weatherWidget?.querySelector('.weather-icon'), weatherTemp=weatherWidget?.querySelector('.weather-temp'), weatherTooltip=weatherWidget?.querySelector('.weather-tooltip'), weatherCitySetting=document.getElementById('weather-city-setting'), weatherIntervalSetting=document.getElementById('weather-interval-setting'),weatherUnitSetting=document.getElementById('weather-unit-setting');
@@ -2038,6 +2116,11 @@ function applyDarkTheme(enabled) {
         loadTheme();
         loadData();
         return;
+      }
+      // Remove the retired hard-coded provider preference from existing installs.
+      if (stored && Object.prototype.hasOwnProperty.call(stored, 'searchbarEngine')) {
+        delete stored.searchbarEngine;
+        chrome.storage.local.remove('searchbarEngine');
       }
 
       const hasUserData = Object.keys(stored || {}).some((key) => !['__speedDialDefaultsApplied', 'privateSpeedDialLanguage'].includes(key));

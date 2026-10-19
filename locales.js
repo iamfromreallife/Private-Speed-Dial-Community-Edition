@@ -101,7 +101,6 @@
     'Dial background color': {pt:'Cor de fundo do dial',es:'Color de fondo del acceso',fr:'Couleur d’arrière-plan du raccourci',de:'Dial-Hintergrundfarbe'},
     'Search bar settings': {pt:'Definições da barra de pesquisa',es:'Ajustes de la barra de búsqueda',fr:'Paramètres de la barre de recherche',de:'Suchleisteneinstellungen'},
     'Enable search bar': {pt:'Ativar barra de pesquisa',es:'Activar barra de búsqueda',fr:'Activer la barre de recherche',de:'Suchleiste aktivieren'},
-    'Default search engine': {pt:'Motor de pesquisa predefinido',es:'Motor de búsqueda predeterminado',fr:'Moteur de recherche par défaut',de:'Standardsuchmaschine'},
     'Size': {pt:'Tamanho',es:'Tamaño',fr:'Taille',de:'Größe'}, 'Height': {pt:'Altura',es:'Altura',fr:'Hauteur',de:'Höhe'},
     'Shape': {pt:'Forma',es:'Forma',fr:'Forme',de:'Form'}, 'Opacity': {pt:'Opacidade',es:'Opacidad',fr:'Opacité',de:'Deckkraft'}, 'Color': {pt:'Cor',es:'Color',fr:'Couleur',de:'Farbe'},
     'Limit color': {pt:'Cor do limite',es:'Color del borde',fr:'Couleur de la bordure',de:'Randfarbe'},
@@ -191,7 +190,6 @@
   };
   // Supplemental runtime coverage for labels that were still authored directly in English.
   Object.assign(englishUiTranslations, {
-    'Default search engine': {pt:'Motor de pesquisa predefinido',es:'Motor de búsqueda predeterminado',fr:'Moteur de recherche par défaut',de:'Standardsuchmaschine'},
     'Size': {pt:'Tamanho',es:'Tamaño',fr:'Taille',de:'Größe'},
     'Height': {pt:'Altura',es:'Altura',fr:'Hauteur',de:'Höhe'},
     'Shape': {pt:'Forma',es:'Forma',fr:'Forme',de:'Form'},
@@ -243,6 +241,11 @@
     'results': {pt:'resultados',es:'resultados',fr:'résultats',de:'Ergebnisse'}
   });
 
+  Object.assign(englishUiTranslations, {
+    "Reset all settings": {pt:"Repor todas as definições", es:"Restablecer todos los ajustes", fr:"Réinitialiser tous les paramètres", de:"Alle Einstellungen zurücksetzen"},
+    "Could not reset settings. Please try again.": {pt:"Não foi possível repor as definições. Tenta novamente.", es:"No se pudieron restablecer los ajustes. Inténtalo de nuevo.", fr:"Impossible de réinitialiser les paramètres. Veuillez réessayer.", de:"Einstellungen konnten nicht zurückgesetzt werden. Bitte versuche es erneut."},
+    "Reset all settings to the defaults? This will replace your current settings and shortcuts.": {pt:"Repor todas as definições para os valores predefinidos? As definições e os atalhos atuais serão substituídos.", es:"¿Restablecer todos los ajustes a los valores predeterminados? Se sustituirán los ajustes y accesos directos actuales.", fr:"Réinitialiser tous les paramètres par défaut ? Les paramètres et raccourcis actuels seront remplacés.", de:"Alle Einstellungen auf die Standardwerte zurücksetzen? Deine aktuellen Einstellungen und Verknüpfungen werden ersetzt."}
+  });
   function translateString(s) {
     if (englishUiTranslations[s] && current !== 'en') return englishUiTranslations[s][current] || s;
     if (tabTranslations[s] && current !== 'en') return tabTranslations[s][current] || s;

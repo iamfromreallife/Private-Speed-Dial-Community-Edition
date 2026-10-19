@@ -2157,3 +2157,68 @@ body.dark-theme #controls-panel #weather-city-setting, body.dark-theme .weather-
 #controls-panel .settings-tab-panel,#controls-panel .settings-tab-panel > *,#controls-panel .settings-tab-panel section,#controls-panel .settings-tab-panel .controls-row,#controls-panel .settings-tab-panel .font-setting,#controls-panel .settings-tab-panel .inline-setting-heading { min-width:0 !important; max-width:100% !important; box-sizing:border-box !important; }
 #controls-panel .settings-tab-panel input:not([type="range"]):not([type="checkbox"]),#controls-panel .settings-tab-panel select,#controls-panel .settings-tab-panel textarea,#controls-panel .settings-tab-panel button { min-width:0 !important; max-width:100% !important; box-sizing:border-box !important; }
 @media (max-width:640px) { #controls-panel .settings-tabs-layout { grid-template-columns:minmax(112px,32%) minmax(0,1fr) !important; gap:8px !important; } #controls-panel .settings-tabs-nav .settings-tab { padding:8px 5px !important; gap:5px !important; } }
+
+
+/* Reset control follows Donate; danger styling stays consistent in light and dark themes. */
+#controls-panel .reset-all-settings-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 32px !important;
+  margin: 8px 0 0 !important;
+  padding: 7px 10px !important;
+  box-sizing: border-box !important;
+  border: 1px solid #650000 !important;
+  border-radius: 9px !important;
+  background: #8b0000 !important;
+  color: #ffffff !important;
+  font-family: inherit !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+  text-align: left !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transition: background-color .15s ease, border-color .15s ease !important;
+}
+#controls-panel .reset-danger-icon {
+  flex: 0 0 auto !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+#controls-panel .reset-all-settings-label {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  font-size: 11px !important;
+  color: #ffffff !important;
+  text-align: left !important;
+}
+#controls-panel .reset-all-settings-button:hover:not(:disabled) {
+  background: #650000 !important;
+  border-color: #4b0000 !important;
+  color: #ffffff !important;
+}
+#controls-panel .reset-all-settings-button:focus-visible {
+  outline: 2px solid #b71c1c !important;
+  outline-offset: 2px !important;
+}
+#controls-panel .reset-all-settings-button:disabled {
+  opacity: .65 !important;
+  cursor: wait !important;
+}
+body.dark-theme #controls-panel .reset-all-settings-button,
+body.dark-theme #controls-panel .reset-all-settings-button:hover:not(:disabled) {
+  background: #8b0000 !important;
+  color: #ffffff !important;
+  border-color: #650000 !important;
+}
+body.dark-theme #controls-panel .reset-all-settings-button:hover:not(:disabled) {
+  background: #650000 !important;
+  border-color: #4b0000 !important;
+}
+

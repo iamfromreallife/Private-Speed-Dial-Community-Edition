@@ -20,3 +20,4 @@ The extension stores its settings and shortcuts locally in the browser. It does 
 ## Contributing
 
 Issues and pull requests are welcome. Please include reproduction steps for bugs and describe the browser/version tested.
+Search privacy: the New Tab search box submits queries through Chrome's Search API and respects the default search provider selected in Chrome. This extension does not set or override the default search engine.

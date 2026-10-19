@@ -40,6 +40,7 @@
         <div class="donation-block" aria-label="Support development">
           <a class="donate-button" href="https://donate.stripe.com/aFa8wP12a4R16HI9Xra3u00" target="_blank" rel="noopener noreferrer"><span class="donate-primary">Donate</span><span class="donate-secondary">to help development</span></a>
         </div>
+        <button id="reset-all-settings-btn" class="reset-all-settings-button" type="button" aria-label="Reset all settings"><span class="reset-danger-icon" aria-hidden="true">🚨</span><span class="reset-all-settings-label">Reset all settings</span></button>
       </section>
       <section class="settings-search-section" aria-label="Pesquisar definição">
         <div class="settings-search-heading-row"><strong class="settings-heading"><span class="section-icon" aria-hidden="true">⌕</span>Pesquisar definição</strong>
@@ -52,7 +53,6 @@
         <div class="font-setting weather-city-setting-wrap"><label for="weather-city-setting">Weather city</label><div class="weather-city-input-wrap"><input id="weather-city-setting" type="text" value="London, England, United Kingdom" placeholder="e.g. London" autocomplete="off" spellcheck="false" aria-autocomplete="list" aria-expanded="false" aria-controls="weather-city-suggestions"><div id="weather-city-suggestions" class="weather-city-suggestions" role="listbox" hidden></div></div></div>
         <div class="font-setting"><label for="weather-interval-setting">Weather update interval</label><select id="weather-interval-setting"><option value="15">15 minutes</option><option value="30" selected>30 minutes</option><option value="60">60 minutes</option><option value="120">2 hours</option></select></div>
         <div class="font-setting"><label for="weather-unit-setting">Temperature units</label><select id="weather-unit-setting"><option value="metric">Metric (°C)</option><option value="imperial">Imperial (°F)</option></select></div>
-        <div class="font-setting"><label for="searchbar-engine">Default search engine</label><select id="searchbar-engine"><option value="google">Google</option><option value="bing">Bing</option><option value="duckduckgo">DuckDuckGo</option><option value="yahoo">Yahoo</option><option value="brave">Brave Search</option><option value="ecosia">Ecosia</option><option value="startpage">Startpage</option></select></div>
         <div class="font-setting"><label for="searchbar-vertical">Vertical position</label><output class="range-value" id="searchbar-vertical-value" for="searchbar-vertical"></output><input id="searchbar-vertical" type="range" min="-800" max="800" step="1" value="0"></div>
         <div class="font-setting"><label for="searchbar-horizontal">Horizontal position</label><output class="range-value" id="searchbar-horizontal-value" for="searchbar-horizontal"></output><input id="searchbar-horizontal" class="middle-sticky-range" type="range" min="-1200" max="1200" step="1" value="0"><span class="middle-sticky-label">Middle</span></div>
         
