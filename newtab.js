@@ -999,6 +999,8 @@ function applyDarkTheme(enabled) {
     el?.addEventListener('input', saveClockPreferences);
     el?.addEventListener('change', saveClockPreferences);
   });
+  clock24HourInput?.addEventListener('change', () => { updateClock(); saveClockPreferences(); });
+
   // Pré-visualiza a duração escolhida reiniciando a animação de entrada dos dials.
   dialEntryDuration?.addEventListener('input', () => applyEntryAnimationToTiles(true));
   [dialFadeEnabled, dialPhoneEnabled, dialPhoneDuration].forEach(el => { el?.addEventListener('input', () => { saveClockPreferences(); applyEntryAnimationToTiles(true); }); el?.addEventListener('change', () => { saveClockPreferences(); applyEntryAnimationToTiles(true); }); });

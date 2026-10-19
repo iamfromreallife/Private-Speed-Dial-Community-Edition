@@ -2,8 +2,6 @@
 
 An open-source new-tab page with a customizable shortcut grid, clock and date, search bar, a solid page-background colour selector, and layout/appearance controls.
 
-Disclosure: AI was used in building this extension.
-
 ## Community Edition scope
 
 Private Speed Dial CE contains no Pro licensing, payment, subscription, or ExtensionPay integration. Pro-only wallpaper galleries and bundled wallpaper images are not included. The page background colour selector remains available.
