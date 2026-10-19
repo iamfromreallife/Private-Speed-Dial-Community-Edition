@@ -953,8 +953,12 @@ function applyDarkTheme(enabled) {
     if (clockHorizontal) clockHorizontal.value = String(clockX);
     if (dateOrderInput) dateOrderInput.value = prefs.dateOrder || 'below';
     if (clockDateDistanceInput) clockDateDistanceInput.value = String(Math.max(-10, Math.min(10, Number(prefs.clockDateDistance ?? 0))));
-    customizeBtn.textContent = (typeof prefs.buttonLabel === 'string' && prefs.buttonLabel.trim()) ? (['Personalizar','Customize','Personnaliser','Anpassen','Botón Personalizar'].includes(prefs.buttonLabel) ? 'Settings' : prefs.buttonLabel) : 'Settings';
-    if (buttonLabel) buttonLabel.value = typeof prefs.buttonLabel === 'string' ? (['Personalizar','Customize','Personnaliser','Anpassen','Botón Personalizar'].includes(prefs.buttonLabel) ? 'Settings' : prefs.buttonLabel) : 'Settings';
+    const storedButtonLabel = typeof prefs.buttonLabel === 'string' ? prefs.buttonLabel.trim() : '';
+    const defaultButtonLabelAliases = ['Settings', 'Definições', 'Ajustes', 'Paramètres', 'Einstellungen', 'Personalizar', 'Customize', 'Personnaliser', 'Anpassen', 'Botón Personalizar'];
+    const isDefaultButtonLabel = !storedButtonLabel || defaultButtonLabelAliases.includes(storedButtonLabel);
+    // Keep the visible button's canonical label translatable, while localizing the editable field itself.
+    customizeBtn.textContent = isDefaultButtonLabel ? 'Settings' : storedButtonLabel;
+    if (buttonLabel) buttonLabel.value = isDefaultButtonLabel ? (window.PrivateSpeedDialI18n?.t('Settings') || 'Settings') : storedButtonLabel;
     customizeBtn.style.setProperty('--button-vertical-offset', `${Number(prefs.buttonVertical) || 0}px`);
     const buttonX = Math.max(-1920, Math.min(1920, Number(prefs.buttonHorizontal) || 0));
     customizeBtn.style.setProperty('--button-horizontal-offset', `${buttonX}px`);

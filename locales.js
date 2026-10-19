@@ -298,6 +298,16 @@
     // Translate the Language heading like every other UI label; the select options
     // themselves retain their native language names.
     document.querySelectorAll('.settings-tab-label[data-i18n]').forEach(el => { const key = el.dataset.i18n; el.textContent = (tabTranslations[key] && current !== 'en') ? (tabTranslations[key][current] || key) : key; });
+    // Update the Button text field immediately when the selected UI language changes,
+    // but do not overwrite a user-defined custom button label.
+    const buttonLabelInput = document.getElementById('button-label');
+    const defaultButtonLabelAliases = new Set(['Settings', 'Definições', 'Ajustes', 'Paramètres', 'Einstellungen', 'Personalizar', 'Customize', 'Personnaliser', 'Anpassen', 'Botón Personalizar']);
+    if (buttonLabelInput) {
+      const visibleButtonLabel = buttonLabelInput.value.trim();
+      if (!visibleButtonLabel || defaultButtonLabelAliases.has(visibleButtonLabel)) {
+        buttonLabelInput.value = translateString('Settings');
+      }
+    }
     storage(current);
     applying = false;
   }
