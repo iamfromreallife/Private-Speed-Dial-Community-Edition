@@ -259,6 +259,8 @@
   function rememberAndTranslate(node) {
     if (!node) return;
     if (node.nodeType === Node.TEXT_NODE) {
+      // The customise-button caption is managed by newtab.js so a custom title is never translated.
+      if (node.parentElement?.closest('#customize-btn')) return;
       if (!originalText.has(node)) originalText.set(node, node.nodeValue);
       const original = originalText.get(node) || '';
       const trimmed = original.trim(); if (!trimmed) return;
@@ -278,18 +280,23 @@
           node.setAttribute(attr, node === document.querySelector('.language-section .settings-heading') && attr === 'aria-label' ? 'Language' : translateString(original));
         }
       }
-      for (const child of node.childNodes) rememberAndTranslate(child);
+      if (node.id !== 'customize-btn') {
+        for (const child of node.childNodes) rememberAndTranslate(child);
+      }
     }
   }
   function restoreAndTranslate(node) {
     if (!node) return;
     if (node.nodeType === Node.TEXT_NODE) {
+      if (node.parentElement?.closest('#customize-btn')) return;
       if (originalText.has(node)) node.nodeValue = originalText.get(node);
     } else if (node.nodeType === Node.ELEMENT_NODE) {
       if (node.id === 'language-select') { node.querySelectorAll('option').forEach(o => o.textContent = names[o.value] || o.value); node.value = current; return; }
       const attrs = originalAttrs.get(node);
       if (attrs) for (const [attr, value] of Object.entries(attrs)) node.setAttribute(attr, value);
-      for (const child of node.childNodes) restoreAndTranslate(child);
+      if (node.id !== 'customize-btn') {
+        for (const child of node.childNodes) restoreAndTranslate(child);
+      }
     }
   }
   function applyLanguage(lang) {
@@ -303,15 +310,19 @@
     // Translate the Language heading like every other UI label; the select options
     // themselves retain their native language names.
     document.querySelectorAll('.settings-tab-label[data-i18n]').forEach(el => { const key = el.dataset.i18n; el.textContent = (tabTranslations[key] && current !== 'en') ? (tabTranslations[key][current] || key) : key; });
-    // Update the Button text field immediately when the selected UI language changes,
-    // but do not overwrite a user-defined custom button label.
+    // Localize the default button title only when the user has not supplied a custom title.
     const buttonLabelInput = document.getElementById('button-label');
-    const defaultButtonLabelAliases = new Set(['Settings', 'Definições', 'Ajustes', 'Paramètres', 'Einstellungen', 'Personalizar', 'Customize', 'Personnaliser', 'Anpassen', 'Botón Personalizar']);
-    if (buttonLabelInput) {
-      const visibleButtonLabel = buttonLabelInput.value.trim();
-      if (!visibleButtonLabel || defaultButtonLabelAliases.has(visibleButtonLabel)) {
-        buttonLabelInput.value = translateString('Settings');
-      }
+    const customizeButton = document.getElementById('customize-btn');
+    const isCustomButtonLabel = buttonLabelInput?.dataset.customLabel === 'true'
+      || customizeButton?.dataset.customLabel === 'true';
+    const localizedDefaultLabel = translateString('Settings');
+    if (buttonLabelInput && !isCustomButtonLabel) {
+      buttonLabelInput.value = localizedDefaultLabel;
+    }
+    if (customizeButton) {
+      customizeButton.textContent = isCustomButtonLabel && buttonLabelInput?.value.trim()
+        ? buttonLabelInput.value
+        : localizedDefaultLabel;
     }
     storage(current);
     applying = false;

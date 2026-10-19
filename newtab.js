@@ -349,6 +349,7 @@ function applyDarkTheme(enabled) {
   const buttonHorizontal = document.getElementById('button-horizontal');
   const buttonVertical = document.getElementById('button-vertical');
   const buttonLabel = document.getElementById('button-label');
+  let buttonLabelCustom = false;
   const buttonWidth = document.getElementById('button-width');
   const buttonHeight = document.getElementById('button-height');
   const buttonShape = document.getElementById('button-shape');
@@ -1028,12 +1029,22 @@ function applyDarkTheme(enabled) {
     if (clockHorizontal) clockHorizontal.value = String(clockX);
     if (dateOrderInput) dateOrderInput.value = prefs.dateOrder || 'below';
     if (clockDateDistanceInput) clockDateDistanceInput.value = String(Math.max(-10, Math.min(10, Number(prefs.clockDateDistance ?? 0))));
-    const storedButtonLabel = typeof prefs.buttonLabel === 'string' ? prefs.buttonLabel.trim() : '';
-    const defaultButtonLabelAliases = ['Settings', 'Definições', 'Ajustes', 'Paramètres', 'Einstellungen', 'Personalizar', 'Customize', 'Personnaliser', 'Anpassen', 'Botón Personalizar'];
-    const isDefaultButtonLabel = !storedButtonLabel || defaultButtonLabelAliases.includes(storedButtonLabel);
-    // Keep the visible button's canonical label translatable, while localizing the editable field itself.
-    customizeBtn.textContent = isDefaultButtonLabel ? 'Settings' : storedButtonLabel;
-    if (buttonLabel) buttonLabel.value = isDefaultButtonLabel ? (window.PrivateSpeedDialI18n?.t('Settings') || 'Settings') : storedButtonLabel;
+    const storedButtonLabel = typeof prefs.buttonLabel === 'string' ? prefs.buttonLabel : '';
+    const legacyDefaultButtonLabels = ['Settings', 'Definições', 'Ajustes', 'Paramètres', 'Einstellungen', 'Personalizar', 'Customize', 'Personnaliser', 'Anpassen', 'Botón Personalizar'];
+    const hasExplicitCustomLabelState = typeof prefs.buttonLabelCustom === 'boolean';
+    const isCustomButtonLabel = hasExplicitCustomLabelState
+      ? Boolean(prefs.buttonLabelCustom && storedButtonLabel.trim())
+      : Boolean(storedButtonLabel.trim() && !legacyDefaultButtonLabels.includes(storedButtonLabel.trim()));
+    buttonLabelCustom = isCustomButtonLabel;
+    const localizedDefaultButtonLabel = window.PrivateSpeedDialI18n?.t('Settings') || 'Settings';
+    if (buttonLabel) buttonLabel.dataset.customLabel = String(isCustomButtonLabel);
+    if (customizeBtn) customizeBtn.dataset.customLabel = String(isCustomButtonLabel);
+    customizeBtn.textContent = isCustomButtonLabel ? storedButtonLabel : localizedDefaultButtonLabel;
+    // Never rewrite the value while the user is editing it; this prevents every keystroke
+    // (especially clearing the field to replace the default) from being overwritten.
+    if (buttonLabel && document.activeElement !== buttonLabel) {
+      buttonLabel.value = isCustomButtonLabel ? storedButtonLabel : localizedDefaultButtonLabel;
+    }
     customizeBtn.style.setProperty('--button-vertical-offset', `${Number(prefs.buttonVertical) || 0}px`);
     const buttonX = Math.max(-1920, Math.min(1920, Number(prefs.buttonHorizontal) || 0));
     customizeBtn.style.setProperty('--button-horizontal-offset', `${buttonX}px`);
@@ -1167,7 +1178,7 @@ function applyDarkTheme(enabled) {
       darkTheme: Boolean(darkThemeToggle?.checked),
       clockFontFamily: clockFontFamily.value, clockFontSize: Number(clockFontSize.value) || 82, clockFontWeight: Number(clockFontWeight.value) || 300,
       dateFontFamily: dateFontFamily.value, dateFontSize: Number(dateFontSize.value) || 17, dateFontWeight: Number(dateFontWeight.value) || 400,
-      hideClock: !document.getElementById('hide-clock')?.checked, hideDate: !document.getElementById('hide-date')?.checked, clock24Hour: Boolean(clock24HourInput?.checked), clockColor: clockColor.value, dateColor: dateColor.value, separatorColor: separatorColor?.value || '#8b8b95', separatorOpacity: Number(separatorOpacity?.value ?? 55), separatorThickness: Number(separatorThickness?.value ?? 2), separatorVertical: Number(separatorVertical?.value ?? 0), dialButtonSeparatorColor: dialButtonSeparatorColor?.value || '#8b8b95', dialButtonSeparatorOpacity: Number(dialButtonSeparatorOpacity?.value ?? 55), dialButtonSeparatorThickness: Number(dialButtonSeparatorThickness?.value ?? 2), dialButtonSeparatorVertical: Number(dialButtonSeparatorVertical?.value ?? 0), clockVertical: Number(clockVertical.value) || 0, clockHorizontal: Number(clockHorizontal?.value ?? 0), dateOrder: dateOrderInput?.value || 'below', clockAlignment: document.querySelector('.clock-alignment-option.active')?.dataset.clockAlignment || 'left', clockDateDistance: Number(clockDateDistanceInput?.value ?? 8), buttonHorizontal: Number(buttonHorizontal?.value ?? 0), buttonVertical: Number(buttonVertical.value) || 0, buttonLabel: (buttonLabel?.value ?? 'Settings').slice(0, 60), buttonWidth: Number(buttonWidth?.value ?? 120), buttonHeight: Number(buttonHeight?.value ?? 40), buttonShape: Number(buttonShape?.value ?? 50), buttonOpacity: Number(buttonOpacity?.value ?? 100), buttonBackgroundColor: buttonBackgroundColor?.value || '#f2f2f3',
+      hideClock: !document.getElementById('hide-clock')?.checked, hideDate: !document.getElementById('hide-date')?.checked, clock24Hour: Boolean(clock24HourInput?.checked), clockColor: clockColor.value, dateColor: dateColor.value, separatorColor: separatorColor?.value || '#8b8b95', separatorOpacity: Number(separatorOpacity?.value ?? 55), separatorThickness: Number(separatorThickness?.value ?? 2), separatorVertical: Number(separatorVertical?.value ?? 0), dialButtonSeparatorColor: dialButtonSeparatorColor?.value || '#8b8b95', dialButtonSeparatorOpacity: Number(dialButtonSeparatorOpacity?.value ?? 55), dialButtonSeparatorThickness: Number(dialButtonSeparatorThickness?.value ?? 2), dialButtonSeparatorVertical: Number(dialButtonSeparatorVertical?.value ?? 0), clockVertical: Number(clockVertical.value) || 0, clockHorizontal: Number(clockHorizontal?.value ?? 0), dateOrder: dateOrderInput?.value || 'below', clockAlignment: document.querySelector('.clock-alignment-option.active')?.dataset.clockAlignment || 'left', clockDateDistance: Number(clockDateDistanceInput?.value ?? 8), buttonHorizontal: Number(buttonHorizontal?.value ?? 0), buttonVertical: Number(buttonVertical.value) || 0, buttonLabel: buttonLabelCustom && buttonLabel ? buttonLabel.value.slice(0, 60) : '', buttonLabelCustom: Boolean(buttonLabelCustom && buttonLabel?.value.trim()), buttonWidth: Number(buttonWidth?.value ?? 120), buttonHeight: Number(buttonHeight?.value ?? 40), buttonShape: Number(buttonShape?.value ?? 50), buttonOpacity: Number(buttonOpacity?.value ?? 100), buttonBackgroundColor: buttonBackgroundColor?.value || '#f2f2f3',
       dialColumns: String(Math.max(1, Math.min(10, Number(dialColumns.value) || 5))), dialRows: String(Math.max(1, Math.min(10, Number(dialRows?.value) || 2))), dialGridHeight: Number(dialGridHeight?.value ?? 400), dialTitleGap: Number(dialTitleGap?.value ?? 0), dialMaxWidth: Number(dialMaxWidth?.value ?? 800), dialGridLinesOpacity: Number(dialGridLinesOpacity?.value ?? 0), dialShape: Number(dialShape?.value ?? 0), dialFaviconShape: Number(dialFaviconShape?.value ?? 0), dialEntryDuration: Number(dialEntryDuration?.value ?? 125), dialFadeEnabled: Boolean(dialFadeEnabled?.checked), dialPhoneEnabled: Boolean(dialPhoneEnabled?.checked), dialPhoneDuration: Number(dialPhoneDuration?.value ?? 350), dialIconGlowColor: dialIconGlowColor?.value || '#9b5de5', dialIconGlowOpacity: Number(dialIconGlowOpacity?.value ?? 45), dialIconGlowSize: Number(dialIconGlowSize?.value ?? 8), dialIconSize: Number(dialIconSize?.value ?? 64), dialFaviconSize: Number(dialFaviconSize?.value ?? 48), dialBackgroundColor: dialBackgroundColor?.value || '#ffffff', dialBorderColor: dialBorderColor?.value || '#8b8b95', dialBorderThickness: Number(dialBorderThickness?.value ?? 0), dialBorderOpacity: Number(dialBorderOpacity?.value ?? 100), dialTitleSize: Number(dialTitleSize?.value ?? 12), dialTitleFontFamily: dialTitleFontFamily?.value || 'system', dialTitleColor: dialTitleColor?.value || '#1d1d1f', buttonFontFamily: buttonFontFamily.value, buttonFontSize: Number(buttonFontSize.value) || 13, buttonFontColor: buttonFontColor.value, buttonGlowEnabled: true, buttonGlowSize: Number(buttonGlowSize?.value ?? 16), buttonGlowOpacity: Number(buttonGlowOpacity?.value ?? 45), buttonGlowColor: buttonGlowColor?.value || '#9b5de5'
     };
     applyClockPreferences(prefs);
@@ -1192,7 +1203,40 @@ function applyDarkTheme(enabled) {
 
   buttonShape?.addEventListener('input', () => { const v=Number(buttonShape.value)||0; const out=document.getElementById('button-shape-value'); if(out) out.textContent=`${v}%`; customizeBtn.style.borderRadius=`${v*0.36}px`; saveClockPreferences(); });
   buttonBackgroundColor?.addEventListener('input', () => { customizeBtn.style.backgroundColor=buttonBackgroundColor.value; saveClockPreferences(); });
-  [dialFadeEnabled, dialPhoneEnabled, dialPhoneDuration, buttonLabel, clockFontFamily, clockFontSize, clockFontWeight, dateFontFamily, dateFontSize, dateFontWeight, separatorColor, separatorOpacity, separatorThickness, separatorVertical, dialButtonSeparatorColor, dialButtonSeparatorOpacity, dialButtonSeparatorThickness, dialButtonSeparatorVertical, clockColor, dateColor, clockVertical, dateVertical, buttonVertical, buttonWidth, buttonHeight, buttonShape, buttonBackgroundColor, buttonOpacity, dialTitleGap, dialMaxWidth, dialGridHeight, dialGridLinesOpacity, dialShape, dialFaviconShape, dialEntryDuration, dialIconGlowColor, dialIconGlowOpacity, dialIconGlowSize, dialColumns, dialRows, buttonFontFamily, buttonFontSize, buttonFontColor, buttonGlowSize, buttonGlowOpacity, buttonGlowColor, dialIconSize, dialFaviconSize, dialBackgroundColor, dialBorderColor, dialBorderThickness, dialBorderOpacity, dialTitleSize, dialTitleFontFamily, dialTitleColor].forEach(el => {
+  // A non-empty value explicitly entered by the user is a custom label, even if it
+  // happens to equal a translated default such as "Settings" or "Definições".
+  buttonLabel?.addEventListener('input', () => {
+    const enteredLabel = buttonLabel.value.slice(0, 60);
+    buttonLabelCustom = Boolean(enteredLabel.trim());
+    buttonLabel.dataset.customLabel = String(buttonLabelCustom);
+    if (customizeBtn) {
+      customizeBtn.dataset.customLabel = String(buttonLabelCustom);
+      // Update the visible button immediately as the user types. When the field
+      // is empty, show the selected language's default label instead.
+      customizeBtn.textContent = buttonLabelCustom
+        ? enteredLabel
+        : (window.PrivateSpeedDialI18n?.t('Settings') || 'Settings');
+      customizeBtn.setAttribute('aria-label', customizeBtn.textContent);
+    }
+    saveClockPreferences();
+  });
+  buttonLabel?.addEventListener('change', saveClockPreferences);
+  buttonLabel?.addEventListener('blur', () => {
+    if (!buttonLabel.value.trim()) {
+      buttonLabelCustom = false;
+      buttonLabel.dataset.customLabel = 'false';
+      if (customizeBtn) customizeBtn.dataset.customLabel = 'false';
+      const defaultButtonLabel = window.PrivateSpeedDialI18n?.t('Settings') || 'Settings';
+      buttonLabel.value = defaultButtonLabel;
+      if (customizeBtn) {
+        customizeBtn.textContent = defaultButtonLabel;
+        customizeBtn.setAttribute('aria-label', defaultButtonLabel);
+      }
+      saveClockPreferences();
+    }
+  });
+
+  [dialFadeEnabled, dialPhoneEnabled, dialPhoneDuration, clockFontFamily, clockFontSize, clockFontWeight, dateFontFamily, dateFontSize, dateFontWeight, separatorColor, separatorOpacity, separatorThickness, separatorVertical, dialButtonSeparatorColor, dialButtonSeparatorOpacity, dialButtonSeparatorThickness, dialButtonSeparatorVertical, clockColor, dateColor, clockVertical, dateVertical, buttonVertical, buttonWidth, buttonHeight, buttonShape, buttonBackgroundColor, buttonOpacity, dialTitleGap, dialMaxWidth, dialGridHeight, dialGridLinesOpacity, dialShape, dialFaviconShape, dialEntryDuration, dialIconGlowColor, dialIconGlowOpacity, dialIconGlowSize, dialColumns, dialRows, buttonFontFamily, buttonFontSize, buttonFontColor, buttonGlowSize, buttonGlowOpacity, buttonGlowColor, dialIconSize, dialFaviconSize, dialBackgroundColor, dialBorderColor, dialBorderThickness, dialBorderOpacity, dialTitleSize, dialTitleFontFamily, dialTitleColor].forEach(el => {
     el?.addEventListener('input', saveClockPreferences);
     el?.addEventListener('change', saveClockPreferences);
   });

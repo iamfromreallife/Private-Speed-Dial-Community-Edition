@@ -140,5 +140,6 @@
   "weatherIntervalMinutes": 30,
   "weatherPositionX": -400,
   "weatherPositionY": -400,
-  "weatherUnit": "metric"
+  "weatherUnit": "metric",
+  "buttonLabelCustom": false
 }
