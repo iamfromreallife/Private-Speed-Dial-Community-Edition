@@ -16,8 +16,8 @@ Nonetheless, there will be a Google Chrome web store version with the following 
 
 ## Privacy
 
-Absolutely no data collection. I really don't care what you do with this extension
+Absolutely no data collection. I really don't care what you do with this extension.
 
 ## Disclosure
 
-AI was used in some partes during the building of this estension.
+This extension was built with the help of AI.
