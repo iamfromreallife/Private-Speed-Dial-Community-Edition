@@ -2231,3 +2231,22 @@ body.dark-theme #controls-panel .reset-all-settings-button:hover:not(:disabled) 
 #controls-panel .donate-primary { display:block !important; }
 #controls-panel .donate-secondary { display:block !important; color:#1769e0 !important; font-size:70% !important; font-weight:600 !important; line-height:1.1 !important; }
 #controls-panel .donate-button:hover .donate-secondary { color:#0b4eae !important; }
+
+
+/* Weather forecast tooltip is informational UI, not editable text. Prevent text-selection/caret cursors while preserving its controls. */
+#searchbar-weather .weather-tooltip,
+#searchbar-weather .weather-tooltip *:not(button):not(a) {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none;
+  caret-color: transparent !important;
+  cursor: default !important;
+}
+#searchbar-weather .weather-tooltip button,
+#searchbar-weather .weather-tooltip a {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  caret-color: transparent !important;
+}
+#searchbar-weather .weather-tooltip button { cursor: pointer !important; }
+#searchbar-weather .weather-tooltip a { cursor: pointer !important; }

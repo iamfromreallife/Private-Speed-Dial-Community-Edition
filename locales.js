@@ -160,7 +160,7 @@
     "Donate": {pt:"Doar",es:"Donar",fr:"Faire un don",de:"Spenden"},
     "to help development": {pt:"para ajudar no desenvolvimento",es:"para ayudar al desarrollo",fr:"pour aider au développement",de:"um die Entwicklung zu unterstützen"},
     "Support development": {pt:"Apoiar o desenvolvimento",es:"Apoyar el desarrollo",fr:"Soutenir le développement",de:"Entwicklung unterstützen"},
-    "Donation": {pt:"Doação",es:"Donación",fr:"Don",de:"Spende"},
+    "(choose a donation amount)": {pt:"(escolhe o valor do donativo)",es:"(elige un importe para donar)",fr:"(choisissez un montant de don)",de:"(Spendenbetrag auswählen)"},
     "Weather city": {pt:"Cidade para a meteorologia",es:"Ciudad del tiempo",fr:"Ville météo",de:"Wetterstadt"},
     "Weather update interval": {pt:"Intervalo de atualização meteorológica",es:"Intervalo de actualización meteorológica",fr:"Intervalle de mise à jour météo",de:"Wetter-Aktualisierungsintervall"},
     "e.g. London": {pt:"ex.: Londres",es:"p. ej., Londres",fr:"ex. : Londres",de:"z. B. London"},
