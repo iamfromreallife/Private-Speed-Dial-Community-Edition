@@ -67,6 +67,124 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.local.get(Object.keys(searchbarDefaults), applySearchbar);
   searchbarIds.forEach(id => { const el=document.getElementById(id); if(!el) return; el.addEventListener('input', () => { const key=searchbarMap[id]; const value=el.type==='checkbox' ? el.checked : (el.type==='range'||el.type==='number' ? Number(el.value) : el.value); if (key === 'searchbarColor') { const autoText = contrastingText(value); const textPicker = document.getElementById('searchbar-font-color'); if (textPicker) textPicker.value = autoText; safeSyncSet({[key]:value, searchbarFontColor:autoText}); } else { safeSyncSet({[key]:value}); } chrome.storage.local.get(Object.keys(searchbarDefaults), applySearchbar); }); el.addEventListener('change', () => { const key=searchbarMap[id]; const value=el.type==='checkbox' ? el.checked : (el.type==='range'||el.type==='number' ? Number(el.value) : el.value); if (key === 'searchbarColor') { const autoText = contrastingText(value); const textPicker = document.getElementById('searchbar-font-color'); if (textPicker) textPicker.value = autoText; safeSyncSet({[key]:value, searchbarFontColor:autoText}); } else { safeSyncSet({[key]:value}); } chrome.storage.local.get(Object.keys(searchbarDefaults), applySearchbar); }); });
   searchbar?.addEventListener('submit', e => { e.preventDefault(); const q=searchbarInput?.value.trim(); if(!q) return; const engines={google:'https://www.google.com/search?q=',bing:'https://www.bing.com/search?q=',duckduckgo:'https://duckduckgo.com/?q=',yahoo:'https://search.yahoo.com/search?p=',brave:'https://search.brave.com/search?q=',ecosia:'https://www.ecosia.org/search?q=',startpage:'https://www.startpage.com/sp/search?query='}; chrome.storage.local.get(['searchbarEngine'], r => { const base=engines[r.searchbarEngine||'google']||engines.google; window.location.href=base+encodeURIComponent(q); }); });
+document.addEventListener('DOMContentLoaded', () => {
+  // Weather indicator with cached current conditions and 7-day forecast.
+  const weatherWidget=document.getElementById('searchbar-weather'), weatherCityLabel=weatherWidget?.querySelector('.weather-city'), weatherIcon=weatherWidget?.querySelector('.weather-icon'), weatherTemp=weatherWidget?.querySelector('.weather-temp'), weatherTooltip=weatherWidget?.querySelector('.weather-tooltip'), weatherCitySetting=document.getElementById('weather-city-setting'), weatherIntervalSetting=document.getElementById('weather-interval-setting'),weatherUnitSetting=document.getElementById('weather-unit-setting');
+  const weatherDefaults={weatherCity:'London, England, United Kingdom',weatherIntervalMinutes:30,weatherUnit:'metric'}; let weatherRequestInProgress=false,weatherRefreshPending=false,weatherSuggestTimer=0,weatherSuggestController=null; const weatherCitySuggestions=document.getElementById('weather-city-suggestions');
+  // Keep the forecast in the browser's top layer while it opens, is displayed, and closes.
+  let weatherTooltipCloseTimer = null;
+  const WEATHER_TOOLTIP_CLOSE_DELAY = 280;
+  const WEATHER_TOOLTIP_ANIMATION_MS = 250;
+  function weatherTooltipIsOpen() {
+    return Boolean(weatherTooltip && weatherTooltip.matches(':popover-open'));
+  }
+  function weatherTooltipHasPointerOrFocus() {
+    return Boolean(
+      weatherWidget?.matches(':hover') || weatherTooltip?.matches(':hover') ||
+      weatherWidget?.contains(document.activeElement) || weatherTooltip?.contains(document.activeElement)
+    );
+  }
+  function positionWeatherTooltip() {
+    if (!weatherTooltip || !weatherTooltipIsOpen() || !weatherWidget) return;
+    const anchor = weatherWidget.getBoundingClientRect();
+    const width = Math.max(0, Math.min(324, window.innerWidth - 24));
+    weatherTooltip.style.width = `${width}px`;
+    const tip = weatherTooltip.getBoundingClientRect();
+    const actualWidth = tip.width || width;
+    const horizontalPadding = 12;
+    const left = Math.max(horizontalPadding, Math.min(anchor.right - actualWidth, window.innerWidth - actualWidth - horizontalPadding));
+    const verticalPadding = 12;
+    const gap = 8;
+    let top = anchor.bottom + gap;
+    if (top + tip.height > window.innerHeight - verticalPadding) {
+      top = anchor.top - tip.height - gap;
+    }
+    top = Math.max(verticalPadding, Math.min(top, Math.max(verticalPadding, window.innerHeight - tip.height - verticalPadding)));
+    weatherTooltip.style.left = `${left}px`;
+    weatherTooltip.style.top = `${top}px`;
+  }
+  function showWeatherTooltip() {
+    if (!weatherTooltip || typeof weatherTooltip.showPopover !== 'function') return;
+    clearTimeout(weatherTooltipCloseTimer);
+    weatherTooltipCloseTimer = null;
+    try {
+      if (!weatherTooltipIsOpen()) weatherTooltip.showPopover();
+    } catch (_) { return; }
+    weatherTooltip.classList.remove('is-closing');
+    positionWeatherTooltip();
+    requestAnimationFrame(() => {
+      if (weatherTooltipIsOpen() && !weatherTooltip.classList.contains('is-closing')) {
+        weatherTooltip.classList.add('is-visible');
+        positionWeatherTooltip();
+      }
+    });
+  }
+  function scheduleWeatherTooltipClose() {
+    if (!weatherTooltip || !weatherTooltipIsOpen()) return;
+    clearTimeout(weatherTooltipCloseTimer);
+    weatherTooltipCloseTimer = setTimeout(() => {
+      if (weatherTooltipHasPointerOrFocus()) {
+        weatherTooltipCloseTimer = null;
+        return;
+      }
+      weatherTooltip.classList.remove('is-visible');
+      weatherTooltip.classList.add('is-closing');
+      // Do not remove the popover from the top layer until the opacity/transform exit finishes.
+      weatherTooltipCloseTimer = setTimeout(() => {
+        if (weatherTooltipHasPointerOrFocus()) {
+          weatherTooltipCloseTimer = null;
+          showWeatherTooltip();
+          return;
+        }
+        try { if (weatherTooltipIsOpen()) weatherTooltip.hidePopover(); } catch (_) {}
+        weatherTooltip.classList.remove('is-visible', 'is-closing');
+        weatherTooltip.style.removeProperty('left');
+        weatherTooltip.style.removeProperty('top');
+        weatherTooltip.style.removeProperty('width');
+        weatherTooltipCloseTimer = null;
+      }, WEATHER_TOOLTIP_ANIMATION_MS);
+    }, WEATHER_TOOLTIP_CLOSE_DELAY);
+  }
+  weatherWidget?.addEventListener('pointerenter', showWeatherTooltip);
+  weatherWidget?.addEventListener('pointerleave', scheduleWeatherTooltipClose);
+  weatherTooltip?.addEventListener('pointerenter', showWeatherTooltip);
+  weatherTooltip?.addEventListener('pointerleave', scheduleWeatherTooltipClose);
+  weatherWidget?.addEventListener('focusin', showWeatherTooltip);
+  weatherWidget?.addEventListener('focusout', scheduleWeatherTooltipClose);
+  weatherTooltip?.addEventListener('focusin', showWeatherTooltip);
+  weatherTooltip?.addEventListener('focusout', scheduleWeatherTooltipClose);
+  window.addEventListener('resize', positionWeatherTooltip, { passive: true });
+  window.addEventListener('scroll', positionWeatherTooltip, { passive: true, capture: true });
+  const weatherKey=c=>c===0?'Clear sky':[1,2].includes(c)?'Mainly clear':c===3?'Overcast':[45,48].includes(c)?'Fog':[51,53,55,56,57].includes(c)?'Drizzle':[61,63,65,66,67,80,81,82].includes(c)?'Rain':[71,73,75,77,85,86].includes(c)?'Snow':[95,96,99].includes(c)?'Thunderstorm':'Weather conditions';
+  function weatherSymbol(c){return c===0?'☀️':[1,2].includes(c)?'🌤️':c===3?'☁️':[45,48].includes(c)?'🌫️':[51,53,55,56,57].includes(c)?'🌦️':[61,63,65,66,67,80,81,82].includes(c)?'🌧️':[71,73,75,77,85,86].includes(c)?'❄️':[95,96,99].includes(c)?'⛈️':'🌡️';}
+  const wt=k=>window.PrivateSpeedDialI18n?.t(k)||k;
+  const weatherGeocodingLanguage=()=>({en:'en',pt:'pt',es:'es',fr:'fr',de:'de'})[window.PrivateSpeedDialI18n?.language]||'en';
+  const searchbarWeatherTextColor=()=>getComputedStyle(document.documentElement).getPropertyValue('--searchbar-text').trim()||'#1d1d1f';
+  function applyWeatherTextColor(color){if(!weatherWidget)return;const resolved=String(color||searchbarWeatherTextColor()||'#1d1d1f').trim();weatherWidget.style.setProperty('color',resolved,'important');[weatherCityLabel,weatherIcon,weatherTemp].forEach(el=>el?.style.setProperty('color',resolved,'important'));}
+  function paintWeather(d){if(!weatherWidget||!d||!Number.isFinite(Number(d.temperature)))return;const city=String(d.city||weatherDefaults.weatherCity).trim().split(',')[0].trim();weatherCityLabel.textContent=city;weatherIcon.textContent=weatherSymbol(Number(d.code));const unit=window.__psdWeatherUnit||'metric';const temp=Number(d.temperature);const shown=unit==='imperial'?Math.round(temp*9/5+32):Math.round(temp);weatherTemp.textContent=`${shown}º${unit==='imperial'?'F':'C'}`;weatherWidget.hidden=false;weatherWidget.setAttribute('aria-label',`${city}: ${shown}º${unit==='imperial'?'F':'C'}`);const daily=d.daily||{},locale=({en:'en-US',pt:'pt-PT',es:'es-ES',fr:'fr-FR',de:'de-DE'})[window.PrivateSpeedDialI18n?.language]||'en-US';const rows=(daily.time||[]).slice(0,7).map((day,i)=>{const label=new Intl.DateTimeFormat(locale,{weekday:'short',day:'numeric'}).format(new Date(day+'T12:00:00'));const code=Number(daily.weather_code?.[i]);return `<div class="weather-day"><span class="weather-day-name">${label}</span><span class="weather-day-prediction">${weatherSymbol(code)} ${wt(weatherKey(code))}</span><span class="weather-day-temp">${Math.round(unit==='imperial'?Number(daily.temperature_2m_max?.[i])*9/5+32:Number(daily.temperature_2m_max?.[i]))}º <span>${Math.round(unit==='imperial'?Number(daily.temperature_2m_min?.[i])*9/5+32:Number(daily.temperature_2m_min?.[i]))}º</span></span></div>`}).join('');weatherTooltip.innerHTML=`<div class="weather-tip-topline"><div class="weather-tip-heading">${wt('Weather forecast')}</div><button type="button" class="weather-refresh-button" aria-label="${wt('Refresh weather')}" title="${wt('Refresh weather')}">🔄</button></div><div class="weather-current"><span class="weather-current-icon">${weatherSymbol(Number(d.code))}</span><div><div class="weather-current-label">${wt('Current conditions')}</div><div class="weather-current-condition">${wt(weatherKey(Number(d.code)))}</div></div><strong>${shown}º${unit==='imperial'?'F':'C'}</strong></div><div class="weather-tip-subtitle">${wt('Next 7 days')}</div><div class="weather-days">${rows||wt('Forecast unavailable')}</div><div class="weather-source-credit">${wt('Data from Open-Meteo')}</div>`;weatherTooltip.querySelector('.weather-refresh-button')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();e.currentTarget.classList.add('is-refreshing');fetchWeather(true);});}
+  async function fetchWeather(force=false){if(!weatherWidget)return;if(weatherRequestInProgress){if(force)weatherRefreshPending=true;return;}weatherRequestInProgress=true;try{const p=await chrome.storage.local.get({...weatherDefaults,weatherCache:null,weatherPlace:null});window.__psdWeatherUnit=p.weatherUnit||'metric';const city=String(p.weatherCity||weatherDefaults.weatherCity).trim(),interval=Math.max(5,Math.min(720,Number(p.weatherIntervalMinutes)||30));if(weatherCitySetting&&document.activeElement!==weatherCitySetting)weatherCitySetting.value=city;if(weatherIntervalSetting)weatherIntervalSetting.value=String(interval);if(weatherUnitSetting)weatherUnitSetting.value=p.weatherUnit||'metric';const c=p.weatherCache,fresh=c&&Number.isFinite(Number(c.latitude))&&Number.isFinite(Number(c.longitude))&&String(c.cityQuery||c.city||'').toLowerCase()===city.toLowerCase()&&Date.now()-Number(c.fetchedAt||0)<interval*60000;if(!force&&fresh){paintWeather(c);return;}let place=p.weatherPlace&&String(p.weatherPlace.label||'').toLowerCase()===city.toLowerCase()?p.weatherPlace:null;if(!place){const gr=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=8&language=${weatherGeocodingLanguage()}&format=json`);if(!gr.ok)throw Error('Geocoding failed');const places=(await gr.json()).results||[];place=places.find(x=>String(x.name||'').toLowerCase()===city.toLowerCase())||places[0];}if(!place)throw Error('City not found');const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=celsius&timezone=auto&forecast_days=7`);if(!r.ok)throw Error('Weather request failed');const w=await r.json(),result={city:place.name,cityQuery:city,latitude:Number(place.latitude),longitude:Number(place.longitude),temperature:w.current?.temperature_2m,code:w.current?.weather_code,daily:w.daily,fetchedAt:Date.now()};if(!Number.isFinite(Number(result.temperature)))throw Error('Weather data unavailable');await chrome.storage.local.set({weatherCache:result});paintWeather(result);}catch(e){console.warn('Private Speed Dial weather:',e.message);try{const {weatherCache}=await chrome.storage.local.get(['weatherCache']);if(weatherCache)paintWeather(weatherCache);}catch(_){}}finally{weatherRequestInProgress=false;if(weatherRefreshPending){weatherRefreshPending=false;fetchWeather(true);}}}
+  function hideWeatherSuggestions(){if(weatherCitySuggestions){weatherCitySuggestions.hidden=true;weatherCitySuggestions.replaceChildren();}weatherCitySetting?.setAttribute('aria-expanded','false');}
+  function selectWeatherSuggestion(place){const city=String(place.name||'').trim();if(!city)return;const label=[place.name,place.admin1,place.country].filter((v,i,a)=>v&&a.indexOf(v)===i).join(', ');weatherCitySetting.value=label;hideWeatherSuggestions();weatherCitySetting.blur();if(weatherCityLabel)weatherCityLabel.textContent=city;if(weatherWidget)weatherWidget.hidden=false;weatherRequestInProgress=false;weatherRefreshPending=false;chrome.storage.local.set({weatherCity:label,weatherPlace:{...place,label},weatherCache:null});}
+  async function suggestWeatherCities(query){if(!weatherCitySuggestions||query.trim().length<2){hideWeatherSuggestions();return;}try{weatherSuggestController?.abort();weatherSuggestController=new AbortController();const response=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query.trim())}&count=8&language=en&format=json`,{signal:weatherSuggestController.signal});if(!response.ok)throw Error('City suggestions unavailable');const places=(await response.json()).results||[];if(query.trim()!==weatherCitySetting.value.trim())return;weatherCitySuggestions.replaceChildren();for(const place of places){const button=document.createElement('button');button.type='button';button.className='weather-city-suggestion';button.role='option';button.textContent=[place.name,place.admin1,place.country].filter((v,i,a)=>v&&a.indexOf(v)===i).join(', ');button.addEventListener('click',()=>selectWeatherSuggestion(place));weatherCitySuggestions.append(button);}if(!places.length){const empty=document.createElement('div');empty.className='weather-city-suggestions-empty';empty.textContent=wt('No cities found');weatherCitySuggestions.append(empty);}weatherCitySuggestions.hidden=false;weatherCitySetting.setAttribute('aria-expanded','true');}catch(error){if(error.name!=='AbortError')hideWeatherSuggestions();}}
+  weatherCitySetting?.addEventListener('input',()=>{clearTimeout(weatherSuggestTimer);weatherSuggestTimer=setTimeout(()=>suggestWeatherCities(weatherCitySetting.value),250);});
+  weatherCitySetting?.addEventListener('focus',()=>{if(weatherCitySetting.value.trim().length>=2)suggestWeatherCities(weatherCitySetting.value);});
+  weatherCitySetting?.addEventListener('blur',()=>setTimeout(hideWeatherSuggestions,180));
+  weatherUnitSetting?.addEventListener('change',async()=>{window.__psdWeatherUnit=weatherUnitSetting.value;await chrome.storage.local.set({weatherUnit:weatherUnitSetting.value});const {weatherCache}=await chrome.storage.local.get(['weatherCache']);if(weatherCache)paintWeather(weatherCache);});weatherCitySetting?.addEventListener('change',async()=>{const city=weatherCitySetting.value.trim()||weatherDefaults.weatherCity;await chrome.storage.local.set({weatherCity:city,weatherPlace:null});fetchWeather(true);});weatherCitySetting?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();weatherCitySetting.blur();}});weatherIntervalSetting?.addEventListener('change',async()=>{await chrome.storage.local.set({weatherIntervalMinutes:Math.max(5,Math.min(720,Number(weatherIntervalSetting.value)||30))});fetchWeather(true);});
+  chrome.storage.onChanged.addListener((c,area)=>{if(area==='local'){if(c.searchbarFontColor)applyWeatherTextColor(c.searchbarFontColor.newValue);if(c.weatherCity){const next=String(c.weatherCity.newValue||weatherDefaults.weatherCity);if(weatherCitySetting&&document.activeElement!==weatherCitySetting)weatherCitySetting.value=next;if(weatherCityLabel)weatherCityLabel.textContent=next.split(',')[0].trim();if(c.weatherCity.oldValue!==c.weatherCity.newValue){chrome.storage.local.set({weatherCache:null});fetchWeather(true);}}if(c.weatherUnit){window.__psdWeatherUnit=c.weatherUnit.newValue||'metric';chrome.storage.local.get(['weatherCache'],r=>{if(r.weatherCache)paintWeather(r.weatherCache);});}}});chrome.storage.local.get({...weatherDefaults,weatherCache:null,searchbarFontColor:'#1d1d1f'},p=>{if(weatherCitySetting)weatherCitySetting.value=p.weatherCity||weatherDefaults.weatherCity;if(weatherIntervalSetting)weatherIntervalSetting.value=String(p.weatherIntervalMinutes||30);window.__psdWeatherUnit=p.weatherUnit||'metric';if(weatherUnitSetting)weatherUnitSetting.value=window.__psdWeatherUnit;applyWeatherTextColor(p.searchbarFontColor);if(p.weatherCache)paintWeather(p.weatherCache);fetchWeather(false);});
+
+
+  // Keep the weather indicator's inline colour in sync with Search bar text preferences.
+  document.getElementById('searchbar-font-color')?.addEventListener('input', (event) => {
+    document.documentElement.style.setProperty('--searchbar-text', event.currentTarget.value);
+    applyWeatherTextColor(event.currentTarget.value);
+  });
+  document.getElementById('searchbar-font-color')?.addEventListener('change', (event) => {
+    document.documentElement.style.setProperty('--searchbar-text', event.currentTarget.value);
+    applyWeatherTextColor(event.currentTarget.value);
+  });
+
+});
+
 function applyDarkTheme(enabled) {
     const active = Boolean(enabled);
     document.body.classList.toggle('dark-theme', active);
@@ -999,8 +1117,6 @@ function applyDarkTheme(enabled) {
     el?.addEventListener('input', saveClockPreferences);
     el?.addEventListener('change', saveClockPreferences);
   });
-  clock24HourInput?.addEventListener('change', () => { updateClock(); saveClockPreferences(); });
-
   // Pré-visualiza a duração escolhida reiniciando a animação de entrada dos dials.
   dialEntryDuration?.addEventListener('input', () => applyEntryAnimationToTiles(true));
   [dialFadeEnabled, dialPhoneEnabled, dialPhoneDuration].forEach(el => { el?.addEventListener('input', () => { saveClockPreferences(); applyEntryAnimationToTiles(true); }); el?.addEventListener('change', () => { saveClockPreferences(); applyEntryAnimationToTiles(true); }); });
@@ -2021,16 +2137,18 @@ function setupSettingsTabs() {
   const searchbar = afterSearch.find(el => el.matches('.searchbar-settings'));
   const background = afterSearch.find(el => el.matches('.theme-section'));
   const entry = afterSearch.find(el => el.matches('.animation-duration-settings'));
-  // Find settings sections through stable identifiers, not translated labels.
-  // locales.js translates aria-labels/headings; those are presentation text and must
-  // never be used to decide whether a section belongs in the tab layout.
-  const directChildren = Array.from(panel.children);
-  const grid = directChildren.find(el => el.matches('.dial-settings') && (
-    el.dataset.settingsSection === 'grid' || !!el.querySelector('#dial-columns')
+  // Identify the grid-layout section by stable translation keys first, then by
+  // its accessible label/heading. The previous Portuguese-only text match could
+  // fail in other interface languages, causing the grid section to be appended
+  // as a leftover after Dial appearance.
+  const grid = [...afterSearch, ...beforeSearch].find(el => el.matches('.dial-settings') && (
+    el.dataset.i18n === 'Dial grid layout' ||
+    el.getAttribute('aria-label') === 'Layout da grelha de dials' ||
+    el.getAttribute('aria-label') === 'Dial grid layout' ||
+    el.querySelector('.settings-heading')?.dataset.i18n === 'Dial grid layout' ||
+    /^(Dial grid layout|Layout da grelha de dials|Grid layout)$/i.test(el.querySelector('.settings-heading')?.textContent?.trim() || '')
   ));
-  const appearance = directChildren.find(el => el.matches('.dial-settings') && (
-    el.dataset.settingsSection === 'appearance' || !!el.querySelector('#dial-shape')
-  ));
+  const appearance = afterSearch.find(el => el.matches('.dial-settings') && (el.getAttribute('aria-label') === 'Aparência dos dials' || el.getAttribute('aria-label') === 'Dial appearance' || el.querySelector('.settings-heading')?.textContent?.includes('Aparência dos dials') || el.querySelector('.settings-heading')?.dataset.i18n === 'Dial appearance')) || Array.from(panel.children).find(el => el.matches('.dial-settings') && (el.getAttribute('aria-label') === 'Aparência dos dials' || el.getAttribute('aria-label') === 'Dial appearance' || el.querySelector('.settings-heading')?.dataset.i18n === 'Dial appearance'));
   const clock = afterSearch.find(el => el.matches('.clock-settings'));
   const button = afterSearch.find(el => el.matches('.button-settings'));
   const separators = afterSearch.filter(el => el.matches('.separator-settings'));
@@ -2082,13 +2200,12 @@ function setupSettingsTabs() {
     languageTop.removeAttribute('style');
     nav.appendChild(languageTop);
   }
-  // Stable viewport-bounded layout: do not size the drawer from translated text.
-  // Measuring labels and mutating width on translation changes caused overflow and
-  // made the sidebar and content columns disagree in Spanish/French/German.
+  // Keep the drawer and tabs aligned independently of translated label length.
+  // Labels wrap instead of resizing the drawer, preventing locale-switch overlap.
   const resizeSettingsForTabLabels = () => {
     const viewportWidth = Math.max(320, document.documentElement.clientWidth || window.innerWidth || 320);
-    const drawerWidth = Math.min(800, Math.max(340, viewportWidth - 28));
-    const navWidth = Math.min(230, Math.max(160, Math.floor(drawerWidth * 0.27)));
+    const drawerWidth = Math.min(600, Math.max(340, viewportWidth - 28));
+    const navWidth = Math.min(200, Math.max(132, Math.floor(drawerWidth * 0.27)));
     panel.style.setProperty('--settings-nav-width', `${navWidth}px`);
     panel.style.setProperty('--settings-panel-width', `${drawerWidth}px`);
     panel.style.setProperty('--settings-drawer-inner-width', `${Math.max(280, drawerWidth - 28)}px`);
@@ -2096,9 +2213,7 @@ function setupSettingsTabs() {
   resizeSettingsForTabLabels();
   if (!nav.dataset.dynamicWidthObserver) {
     nav.dataset.dynamicWidthObserver = 'true';
-    document.getElementById('language-select')?.addEventListener('change', () => {
-      requestAnimationFrame(resizeSettingsForTabLabels);
-    });
+    document.getElementById('language-select')?.addEventListener('change', () => requestAnimationFrame(resizeSettingsForTabLabels));
     window.addEventListener('resize', resizeSettingsForTabLabels);
   }
   function activate(id){
