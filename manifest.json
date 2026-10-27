@@ -2,7 +2,7 @@
   "update_url": "https://clients2.google.com/service/update2/crx",
   "manifest_version": 3,
   "name": "Private Speed Dial CE",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Fully customizable, fast and private Speed Dial for all your favorite websites.",
   "chrome_url_overrides": {
     "newtab": "newtab.html"

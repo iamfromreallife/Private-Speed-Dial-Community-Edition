@@ -150,6 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const weatherDefaults={weatherCity:'London, England, United Kingdom',weatherIntervalMinutes:30,weatherUnit:'metric'}; let weatherRequestInProgress=false,weatherRefreshPending=false,weatherSuggestTimer=0,weatherSuggestController=null; const weatherCitySuggestions=document.getElementById('weather-city-suggestions');
   // Keep the forecast in the browser's top layer while it opens, is displayed, and closes.
   let weatherTooltipCloseTimer = null;
+  let weatherTooltipOpenTimer = null;
+  const WEATHER_TOOLTIP_OPEN_DELAY = 450;
   const WEATHER_TOOLTIP_CLOSE_DELAY = 280;
   const WEATHER_TOOLTIP_ANIMATION_MS = 250;
   function weatherTooltipIsOpen() {
@@ -182,6 +184,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function showWeatherTooltip() {
     if (!weatherTooltip || typeof weatherTooltip.showPopover !== 'function') return;
+    clearTimeout(weatherTooltipOpenTimer);
+    weatherTooltipOpenTimer = null;
     clearTimeout(weatherTooltipCloseTimer);
     weatherTooltipCloseTimer = null;
     try {
@@ -195,6 +199,24 @@ document.addEventListener('DOMContentLoaded', () => {
         positionWeatherTooltip();
       }
     });
+  }
+  function scheduleWeatherTooltipOpen() {
+    if (!weatherWidget || !weatherTooltip) return;
+    clearTimeout(weatherTooltipOpenTimer);
+    if (weatherTooltipIsOpen()) {
+      // Once open, entering the weather info again should cancel its pending close immediately.
+      showWeatherTooltip();
+      return;
+    }
+    weatherTooltipOpenTimer = setTimeout(() => {
+      weatherTooltipOpenTimer = null;
+      if (weatherWidget.matches(':hover')) showWeatherTooltip();
+    }, WEATHER_TOOLTIP_OPEN_DELAY);
+  }
+  function handleWeatherWidgetPointerLeave() {
+    clearTimeout(weatherTooltipOpenTimer);
+    weatherTooltipOpenTimer = null;
+    scheduleWeatherTooltipClose();
   }
   function scheduleWeatherTooltipClose() {
     if (!weatherTooltip || !weatherTooltipIsOpen()) return;
@@ -222,8 +244,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }, WEATHER_TOOLTIP_ANIMATION_MS);
     }, WEATHER_TOOLTIP_CLOSE_DELAY);
   }
-  weatherWidget?.addEventListener('pointerenter', showWeatherTooltip);
-  weatherWidget?.addEventListener('pointerleave', scheduleWeatherTooltipClose);
+  // Delay opening only for hover over the weather indicator; keyboard focus remains immediate.
+  weatherWidget?.addEventListener('pointerenter', scheduleWeatherTooltipOpen);
+  weatherWidget?.addEventListener('pointerleave', handleWeatherWidgetPointerLeave);
   weatherTooltip?.addEventListener('pointerenter', showWeatherTooltip);
   weatherTooltip?.addEventListener('pointerleave', scheduleWeatherTooltipClose);
   weatherWidget?.addEventListener('focusin', showWeatherTooltip);
