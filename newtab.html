@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Private Speed Dial CE</title>
+  <title>Private Speed Dial</title>
 <script src="startup-theme.js"></script>
   <link rel="stylesheet" href="newtab.css">
 </head>
@@ -37,11 +37,42 @@
         <select id="language-select" aria-label="Language">
           <option value="en" selected>English</option><option value="pt">Português</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option>
         </select></div>
-        <div class="donation-block" aria-label="Support development">
-          <a class="donate-button" href="https://donate.stripe.com/aFa8wP12a4R16HI9Xra3u00" target="_blank" rel="noopener noreferrer"><span class="donate-primary">Support development</span><span class="donate-secondary">(choose a donation amount)</span></a>
-        </div>
         <button id="reset-all-settings-btn" class="reset-all-settings-button" type="button" aria-label="Reset all settings"><span class="reset-danger-icon" aria-hidden="true">🚨</span><span class="reset-all-settings-label">Reset all settings</span></button>
       </section>
+      <section class="general-utilities-section" aria-label="General settings">
+        <div class="export-row pro-settings-export-row">
+          <span class="settings-heading" data-i18n="Extension settings"><span class="section-icon" aria-hidden="true">💾</span><span class="settings-heading-label">Extension settings</span></span>
+          <button id="export-settings-btn" type="button" data-i18n="Export settings">Export settings</button>
+          <button id="import-settings-btn" type="button" data-i18n="Import settings">Import settings</button>
+          <input id="import-settings-file" type="file" accept=".json,application/json" hidden>
+        </div>
+        <div class="export-row pro-bookmark-import-row">
+          <div class="inline-setting-heading"><span class="settings-heading"><span class="section-icon" aria-hidden="true">🔖</span>Import dials from bookmarks</span>
+          <select id="bookmark-folder-select" aria-label="Select folder from bookmarks">
+            <option value="">Loading folders…</option>
+          </select></div>
+        </div>
+
+                <section class="presets-panel" aria-label="Presets">
+          <strong class="settings-heading presets-panel-heading"><span class="section-icon" aria-hidden="true">▦</span>Presets (in the next version)</strong>
+          <p class="presets-panel-description">Choose a layout preset. Preset selection is a placeholder for future saved layouts.</p>
+          <div class="preset-cards">
+            <button type="button" class="preset-card" data-preset="minimal-light" aria-pressed="false">
+              <span class="preset-thumbnail preset-thumb-light preset-thumb-minimal" aria-hidden="true"><span class="thumb-dials"><i></i><i></i><i></i></span></span><span class="preset-card-title">Minimal light</span>
+            </button>
+            <button type="button" class="preset-card" data-preset="minimal-dark" aria-pressed="false">
+              <span class="preset-thumbnail preset-thumb-dark preset-thumb-minimal" aria-hidden="true"><span class="thumb-dials"><i></i><i></i><i></i></span></span><span class="preset-card-title">Minimal dark</span>
+            </button>
+            <button type="button" class="preset-card" data-preset="full-light" aria-pressed="false">
+              <span class="preset-thumbnail preset-thumb-light preset-thumb-full" aria-hidden="true"><span class="thumb-clock"></span><span class="thumb-dials"><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="thumb-search"></span></span><span class="preset-card-title">Full light</span>
+            </button>
+            <button type="button" class="preset-card" data-preset="full-dark" aria-pressed="false">
+              <span class="preset-thumbnail preset-thumb-dark preset-thumb-full" aria-hidden="true"><span class="thumb-clock"></span><span class="thumb-dials"><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="thumb-search"></span></span><span class="preset-card-title">Full dark</span>
+            </button>
+          </div>
+        </section>
+      </section>
+
       <section class="settings-search-section" aria-label="Pesquisar definição">
         <div class="settings-search-heading-row"><strong class="settings-heading"><span class="section-icon" aria-hidden="true">⌕</span>Pesquisar definição</strong>
           <input type="search" id="settings-search-input" autocomplete="off" spellcheck="false" aria-label="Pesquisar definição">
@@ -75,11 +106,7 @@
       <div class="controls-divider"></div>
       <div class="theme-section">
         <label class="settings-heading"><span class="section-icon" aria-hidden="true">🖼️</span>Fundo da página</label>
-        <div class="font-setting community-background-color-row">
-          <label class="color-choice" for="bg-color-picker" data-i18n="Page background color">Page background color</label>
-          <input type="color" id="bg-color-picker" value="#ffffff" aria-label="Page background color">
-        </div>
-<div class="background-options">
+        <div class="background-options">
           <div class="vignette-settings">
             <div class="font-setting"><label for="vignette-enabled">Ativar vinheta</label><label class="visibility-option"><input type="checkbox" id="vignette-enabled" aria-label="Ativar vinheta de fundo" title="Ativar/desativar vinheta"></label></div>
              <div class="font-setting"><label for="vignette-color-picker">Cor da vinheta</label><input type="color" id="vignette-color-picker" value="#000000" aria-label="Cor da vinheta"></div>
@@ -107,7 +134,7 @@
         <div class="font-setting"><label for="dial-phone-duration">Zoom in duration</label><output class="range-value" id="dial-phone-duration-value" for="dial-phone-duration"></output><input type="range" id="dial-phone-duration" min="100" max="1200" step="25" value="350"></div>
       </section>
       <div class="controls-divider"></div>
-      <section class="dial-settings" aria-label="Layout da grelha de dials">
+      <section class="dial-settings" data-settings-section="grid" aria-label="Layout da grelha de dials">
         <strong class="settings-heading"><span class="section-icon" aria-hidden="true">▦</span>Layout da grelha de dials</strong>
         <div class="font-setting"><label for="dial-columns">Número de colunas</label><select id="dial-columns"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>
         <div class="font-setting"><label for="dial-rows">Número de linhas</label><select id="dial-rows"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>
@@ -116,7 +143,7 @@
         <div class="font-setting"><label for="dial-grid-lines-opacity">Opacidade das linhas da grelha</label><output class="range-value" id="dial-grid-lines-opacity-value" for="dial-grid-lines-opacity"></output><input type="range" id="dial-grid-lines-opacity" min="0" max="100" step="1" value="0"></div>
       </section>
       <div class="controls-divider"></div>
-      <section class="dial-settings" aria-label="Aparência dos dials">
+      <section class="dial-settings" data-settings-section="appearance" aria-label="Aparência dos dials">
         <strong class="settings-heading"><span class="section-icon" aria-hidden="true">◐</span>Aparência dos dials</strong>
         <div class="font-setting"><label for="dial-shape">Forma dos dials</label><output class="range-value" id="dial-shape-value" for="dial-shape"></output><input type="range" id="dial-shape" min="0" max="100" step="1" value="0"></div>
         <div class="font-setting"><label for="dial-favicon-shape">Forma dos favicons</label><output class="range-value" id="dial-favicon-shape-value" for="dial-favicon-shape"></output><input type="range" id="dial-favicon-shape" min="0" max="100" step="1" value="0"></div>
@@ -211,5 +238,6 @@
   <script src="locales.js"></script>
   <script src="newtab.js"></script>
   <script src="color-pickers.js"></script>
+  
 </body>
 </html>

@@ -9,10 +9,10 @@
   let image = '';
   let savedColor = '';
   try {
-    dark = localStorage.getItem('psd-dark-theme-hint') === '1';
-    mode = localStorage.getItem('psd-bg-mode-hint') || 'default-color';
-    savedColor = localStorage.getItem('psd-bg-color-hint') || '';
-    if (mode === 'custom-image') image = localStorage.getItem('psd-custom-bg-image-hint') || '';
+    dark = false;
+    mode = 'default-color';
+    savedColor = '';
+    image = '';
   } catch (_) {}
 
   const root = document.documentElement;
