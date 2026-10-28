@@ -156,7 +156,39 @@
     'Choose a layout preset. Preset selection is a placeholder for future saved layouts.': {pt:'Escolhe uma predefinição de esquema. A seleção é um espaço reservado para futuros esquemas guardados.',es:'Elige un diseño preestablecido. La selección es un marcador de posición para futuros diseños guardados.',fr:'Choisissez une disposition prédéfinie. La sélection est un espace réservé pour de futures dispositions enregistrées.',de:'Wähle eine Layout-Voreinstellung. Die Auswahl ist ein Platzhalter für künftig gespeicherte Layouts.'},
     'Select folder…': {pt:'Selecionar pasta…',es:'Seleccionar carpeta…',fr:'Sélectionner un dossier…',de:'Ordner auswählen…'},
     'Select folder...': {pt:'Selecionar pasta...',es:'Seleccionar carpeta...',fr:'Sélectionner un dossier...',de:'Ordner auswählen...'},
-    'Select folder text...': {pt:'Selecionar pasta...',es:'Seleccionar carpeta...',fr:'Sélectionner un dossier...',de:'Ordner auswählen...'}
+    'Select folder text...': {pt:'Selecionar pasta...',es:'Seleccionar carpeta...',fr:'Sélectionner un dossier...',de:'Ordner auswählen...'},
+    "Donate": {pt:"Doar",es:"Donar",fr:"Faire un don",de:"Spenden"},
+    "to help development": {pt:"para ajudar no desenvolvimento",es:"para ayudar al desarrollo",fr:"pour aider au développement",de:"um die Entwicklung zu unterstützen"},
+    "Support development": {pt:"Apoiar o desenvolvimento",es:"Apoyar el desarrollo",fr:"Soutenir le développement",de:"Entwicklung unterstützen"},
+    "(choose a donation amount)": {pt:"(escolhe o valor do donativo)",es:"(elige un importe para donar)",fr:"(choisissez un montant de don)",de:"(Spendenbetrag auswählen)"},
+    "Weather city": {pt:"Cidade para a meteorologia",es:"Ciudad del tiempo",fr:"Ville météo",de:"Wetterstadt"},
+    "Weather update interval": {pt:"Intervalo de atualização meteorológica",es:"Intervalo de actualización meteorológica",fr:"Intervalle de mise à jour météo",de:"Wetter-Aktualisierungsintervall"},
+    "e.g. London": {pt:"ex.: Londres",es:"p. ej., Londres",fr:"ex. : Londres",de:"z. B. London"},
+    "15 minutes": {pt:"15 minutos",es:"15 minutos",fr:"15 minutes",de:"15 Minuten"},
+    "30 minutes": {pt:"30 minutos",es:"30 minutos",fr:"30 minutes",de:"30 Minuten"},
+    "60 minutes": {pt:"60 minutos",es:"60 minutos",fr:"60 minutes",de:"60 Minuten"},
+    "2 hours": {pt:"2 horas",es:"2 horas",fr:"2 heures",de:"2 Stunden"},
+    "Temperature units": {pt:"Unidades de temperatura",es:"Unidades de temperatura",fr:"Unités de température",de:"Temperatureinheiten"},
+    "Metric (°C)": {pt:"Métrico (°C)",es:"Métrico (°C)",fr:"Métrique (°C)",de:"Metrisch (°C)"},
+    "Imperial (°F)": {pt:"Imperial (°F)",es:"Imperial (°F)",fr:"Impérial (°F)",de:"Imperial (°F)"},
+    "Current weather": {pt:"Meteorologia atual",es:"Tiempo actual",fr:"Météo actuelle",de:"Aktuelles Wetter"},
+    "Weather forecast": {pt:"Previsão meteorológica",es:"Previsión meteorológica",fr:"Prévisions météo",de:"Wettervorhersage"},
+    "Current conditions": {pt:"Condições atuais",es:"Condiciones actuales",fr:"Conditions actuelles",de:"Aktuelle Bedingungen"},
+    "Next 7 days": {pt:"Próximos 7 dias",es:"Próximos 7 días",fr:"7 prochains jours",de:"Nächste 7 Tage"},
+    "Clear sky": {pt:"Céu limpo",es:"Cielo despejado",fr:"Ciel dégagé",de:"Klarer Himmel"},
+    "Mainly clear": {pt:"Pouco nublado",es:"Principalmente despejado",fr:"Généralement dégagé",de:"Überwiegend klar"},
+    "Overcast": {pt:"Encoberto",es:"Cubierto",fr:"Couvert",de:"Bedeckt"},
+    "Fog": {pt:"Nevoeiro",es:"Niebla",fr:"Brouillard",de:"Nebel"},
+    "Drizzle": {pt:"Chuvisco",es:"Llovizna",fr:"Bruine",de:"Nieselregen"},
+    "Rain": {pt:"Chuva",es:"Lluvia",fr:"Pluie",de:"Regen"},
+    "Snow": {pt:"Neve",es:"Nieve",fr:"Neige",de:"Schnee"},
+    "Thunderstorm": {pt:"Trovoada",es:"Tormenta",fr:"Orage",de:"Gewitter"},
+    "Weather conditions": {pt:"Condições meteorológicas",es:"Condiciones meteorológicas",fr:"Conditions météo",de:"Wetterbedingungen"},
+    "Forecast unavailable": {pt:"Previsão indisponível",es:"Pronóstico no disponible",fr:"Prévisions indisponibles",de:"Vorhersage nicht verfügbar"},
+    "Data from Open-Meteo": {pt:"Dados meteorológicos: Open-Meteo",es:"Datos meteorológicos: Open-Meteo",fr:"Données météo : Open-Meteo",de:"Wetterdaten: Open-Meteo"},
+    "Refresh weather": {pt:"Atualizar meteorologia",es:"Actualizar el tiempo",fr:"Actualiser la météo",de:"Wetter aktualisieren"},
+    "No cities found": {pt:"Não foram encontradas cidades",es:"No se encontraron ciudades",fr:"Aucune ville trouvée",de:"Keine Städte gefunden"},
+    "City suggestions unavailable": {pt:"Sugestões de cidades indisponíveis",es:"Sugerencias de ciudades no disponibles",fr:"Suggestions de villes indisponibles",de:"Stadtvorschläge nicht verfügbar"}
   };
   // Supplemental runtime coverage for labels that were still authored directly in English.
   Object.assign(englishUiTranslations, {
@@ -211,17 +243,12 @@
     'results': {pt:'resultados',es:'resultados',fr:'résultats',de:'Ergebnisse'}
   });
 
-  const weatherTranslations = {
-    'Data from Open-Meteo':{pt:'Dados de Open-Meteo',es:'Datos de Open-Meteo',fr:'Données de Open-Meteo',de:'Daten von Open-Meteo',it:'Dati da Open-Meteo'},
-    'Weather city':{pt:'Cidade para a meteorologia',es:'Ciudad del tiempo',fr:'Ville météo',de:'Wetterstadt'},'Weather update interval':{pt:'Intervalo de atualização meteorológica',es:'Intervalo de actualización meteorológica',fr:'Intervalle de mise à jour météo',de:'Wetter-Aktualisierungsintervall'},'e.g. Lisbon':{pt:'ex.: Lisboa',es:'p. ej., Lisboa',fr:'ex. : Lisbonne',de:'z. B. Lissabon'},'15 minutes':{pt:'15 minutos',es:'15 minutos',fr:'15 minutes',de:'15 Minuten'},'30 minutes':{pt:'30 minutos',es:'30 minutos',fr:'30 minutes',de:'30 Minuten'},'60 minutes':{pt:'60 minutos',es:'60 minutos',fr:'60 minutes',de:'60 Minuten'},'2 hours':{pt:'2 horas',es:'2 horas',fr:'2 heures',de:'2 Stunden'},'Current weather':{pt:'Meteorologia atual',es:'Tiempo actual',fr:'Météo actuelle',de:'Aktuelles Wetter'},'Weather forecast':{pt:'Previsão meteorológica',es:'Previsión meteorológica',fr:'Prévisions météo',de:'Wettervorhersage'},'Current conditions':{pt:'Condições atuais',es:'Condiciones actuales',fr:'Conditions actuelles',de:'Aktuelle Bedingungen'},'Next 7 days':{pt:'Próximos 7 dias',es:'Próximos 7 días',fr:'7 prochains jours',de:'Nächste 7 Tage'},'Clear sky':{pt:'Céu limpo',es:'Cielo despejado',fr:'Ciel dégagé',de:'Klarer Himmel'},'Mainly clear':{pt:'Pouco nublado',es:'Principalmente despejado',fr:'Généralement dégagé',de:'Überwiegend klar'},'Overcast':{pt:'Encoberto',es:'Cubierto',fr:'Couvert',de:'Bedeckt'},'Fog':{pt:'Nevoeiro',es:'Niebla',fr:'Brouillard',de:'Nebel'},'Drizzle':{pt:'Chuvisco',es:'Llovizna',fr:'Bruine',de:'Nieselregen'},'Rain':{pt:'Chuva',es:'Lluvia',fr:'Pluie',de:'Regen'},'Snow':{pt:'Neve',es:'Nieve',fr:'Neige',de:'Schnee'},'Thunderstorm':{pt:'Trovoada',es:'Tormenta',fr:'Orage',de:'Gewitter'},'Weather conditions':{pt:'Condições meteorológicas',es:'Condiciones meteorológicas',fr:'Conditions météo',de:'Wetterbedingungen'},'Forecast unavailable':{pt:'Previsão indisponível',es:'Pronóstico no disponible',fr:'Prévisions indisponibles',de:'Vorhersage nicht verfügbar'},'Weather data by Open-Meteo':{pt:'Dados meteorológicos: Open-Meteo',es:'Datos meteorológicos: Open-Meteo',fr:'Données météo : Open-Meteo',de:'Wetterdaten: Open-Meteo'},'View on The Weather Channel':{pt:'Ver no The Weather Channel',es:'Ver en The Weather Channel',fr:'Voir sur The Weather Channel',de:'Auf The Weather Channel ansehen'},'Refresh weather':{pt:'Atualizar meteorologia',es:'Actualizar el tiempo',fr:'Actualiser la météo',de:'Wetter aktualisieren'},'No cities found':{pt:'Não foram encontradas cidades',es:'No se encontraron ciudades',fr:'Aucune ville trouvée',de:'Keine Städte gefunden'}
-  };
   Object.assign(englishUiTranslations, {
     "Reset all settings": {pt:"Repor todas as definições", es:"Restablecer todos los ajustes", fr:"Réinitialiser tous les paramètres", de:"Alle Einstellungen zurücksetzen"},
     "Could not reset settings. Please try again.": {pt:"Não foi possível repor as definições. Tenta novamente.", es:"No se pudieron restablecer los ajustes. Inténtalo de nuevo.", fr:"Impossible de réinitialiser les paramètres. Veuillez réessayer.", de:"Einstellungen konnten nicht zurückgesetzt werden. Bitte versuche es erneut."},
-    "Reset all settings to the defaults? This will replace your current settings and shortcuts. Your Pro purchase status will be kept.": {pt:"Repor todas as definições para os valores predefinidos? As definições e os atalhos atuais serão substituídos. O estado da tua compra Pro será mantido.", es:"¿Restablecer todos los ajustes a los valores predeterminados? Se sustituirán los ajustes y accesos directos actuales. Se conservará el estado de compra Pro.", fr:"Réinitialiser tous les paramètres par défaut ? Les paramètres et raccourcis actuels seront remplacés. Votre statut d'achat Pro sera conservé.", de:"Alle Einstellungen auf die Standardwerte zurücksetzen? Deine aktuellen Einstellungen und Verknüpfungen werden ersetzt. Dein Pro-Kaufstatus bleibt erhalten."}
+    "Reset all settings to the defaults? This will replace your current settings and shortcuts.": {pt:"Repor todas as definições para os valores predefinidos? As definições e os atalhos atuais serão substituídos.", es:"¿Restablecer todos los ajustes a los valores predeterminados? Se sustituirán los ajustes y accesos directos actuales.", fr:"Réinitialiser tous les paramètres par défaut ? Les paramètres et raccourcis actuels seront remplacés.", de:"Alle Einstellungen auf die Standardwerte zurücksetzen? Deine aktuellen Einstellungen und Verknüpfungen werden ersetzt."}
   });
   function translateString(s) {
-    if (weatherTranslations[s] && current !== 'en') return weatherTranslations[s][current] || s;
     if (englishUiTranslations[s] && current !== 'en') return englishUiTranslations[s][current] || s;
     if (tabTranslations[s] && current !== 'en') return tabTranslations[s][current] || s;
     if (s === 'Idioma') return 'Language';
@@ -301,12 +328,6 @@
     applying = false;
   }
   document.addEventListener('change', e => { if (e.target?.id === 'language-select') { applyLanguage(e.target.value); requestAnimationFrame(() => applyLanguage(e.target.value)); } });
-  if (globalThis.chrome?.storage?.onChanged) {
-    chrome.storage.onChanged.addListener((changes, areaName) => {
-      const savedLanguage = changes.privateSpeedDialLanguage?.newValue;
-      if (areaName === 'local' && dictionaries[savedLanguage] && savedLanguage !== current) applyLanguage(savedLanguage);
-    });
-  }
   const observer = new MutationObserver(records => {
     if (applying) return;
     for (const r of records) {

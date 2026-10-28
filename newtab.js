@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Reset preferences to bundled defaults.
+  // Reset preferences to bundled defaults while keeping Pro entitlement records intact.
   const resetAllSettingsButton = document.getElementById('reset-all-settings-btn');
   resetAllSettingsButton?.addEventListener('click', async () => {
     const translateResetText = (key) => window.PrivateSpeedDialI18n?.t?.(key) || key;
-    if (!window.confirm(translateResetText("Reset all settings to the defaults? This will replace your current settings and shortcuts. Your settings will be reset."))) return;
+    if (!window.confirm(translateResetText("Reset all settings to the defaults? This will replace your current settings and shortcuts."))) return;
 
     resetAllSettingsButton.disabled = true;
     resetAllSettingsButton.setAttribute('aria-busy', 'true');
@@ -22,9 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
           else resolve(items || {});
         });
       });
+      // ExtensionPay owns these records; a preference reset must not reset purchase status.
+      const preservedPurchaseData = Object.fromEntries(
+        Object.entries(existing).filter(([key]) => key.startsWith('extensionpay_'))
+      );
       // Remove settings, cached weather data and custom image keys absent from defaults.json.
       const obsoleteKeys = Object.keys(existing).filter((key) =>
-        !Object.prototype.hasOwnProperty.call(defaults, key)
+        !Object.prototype.hasOwnProperty.call(defaults, key) && !key.startsWith('extensionpay_')
       );
       if (obsoleteKeys.length) {
         await new Promise((resolve, reject) => {
@@ -36,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
       await new Promise((resolve, reject) => {
-        chrome.storage.local.set({ ...defaults, __speedDialDefaultsApplied: true }, () => {
+        chrome.storage.local.set({ ...defaults, ...preservedPurchaseData, __speedDialDefaultsApplied: true }, () => {
           const error = chrome.runtime.lastError;
           if (error) reject(new Error(error.message));
           else resolve();
@@ -260,23 +264,32 @@ document.addEventListener('DOMContentLoaded', () => {
   function paintWeather(d){if(!weatherWidget||!d||!Number.isFinite(Number(d.temperature)))return;const city=String(d.city||weatherDefaults.weatherCity).trim().split(',')[0].trim();weatherCityLabel.textContent=city;weatherIcon.textContent=weatherSymbol(Number(d.code));const unit=window.__psdWeatherUnit||'metric';const temp=Number(d.temperature);const shown=unit==='imperial'?Math.round(temp*9/5+32):Math.round(temp);weatherTemp.textContent=`${shown}º${unit==='imperial'?'F':'C'}`;weatherWidget.hidden=false;weatherWidget.setAttribute('aria-label',`${city}: ${shown}º${unit==='imperial'?'F':'C'}`);const daily=d.daily||{},locale=({en:'en-US',pt:'pt-PT',es:'es-ES',fr:'fr-FR',de:'de-DE'})[window.PrivateSpeedDialI18n?.language]||'en-US';const rows=(daily.time||[]).slice(0,7).map((day,i)=>{const label=new Intl.DateTimeFormat(locale,{weekday:'short',day:'numeric'}).format(new Date(day+'T12:00:00'));const code=Number(daily.weather_code?.[i]);return `<div class="weather-day"><span class="weather-day-name">${label}</span><span class="weather-day-prediction">${weatherSymbol(code)} ${wt(weatherKey(code))}</span><span class="weather-day-temp">${Math.round(unit==='imperial'?Number(daily.temperature_2m_max?.[i])*9/5+32:Number(daily.temperature_2m_max?.[i]))}º <span>${Math.round(unit==='imperial'?Number(daily.temperature_2m_min?.[i])*9/5+32:Number(daily.temperature_2m_min?.[i]))}º</span></span></div>`}).join('');weatherTooltip.innerHTML=`<div class="weather-tip-topline"><div class="weather-tip-heading">${wt('Weather forecast')}</div><button type="button" class="weather-refresh-button" aria-label="${wt('Refresh weather')}" title="${wt('Refresh weather')}">🔄</button></div><div class="weather-current"><span class="weather-current-icon">${weatherSymbol(Number(d.code))}</span><div><div class="weather-current-label">${wt('Current conditions')}</div><div class="weather-current-condition">${wt(weatherKey(Number(d.code)))}</div></div><strong>${shown}º${unit==='imperial'?'F':'C'}</strong></div><div class="weather-tip-subtitle">${wt('Next 7 days')}</div><div class="weather-days">${rows||wt('Forecast unavailable')}</div><div class="weather-source-credit">${wt('Data from Open-Meteo')}</div>`;weatherTooltip.querySelector('.weather-refresh-button')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();e.currentTarget.classList.add('is-refreshing');fetchWeather(true);});}
   async function fetchWeather(force=false){if(!weatherWidget)return;if(weatherRequestInProgress){if(force)weatherRefreshPending=true;return;}weatherRequestInProgress=true;try{const p=await chrome.storage.local.get({...weatherDefaults,weatherCache:null,weatherPlace:null});window.__psdWeatherUnit=p.weatherUnit||'metric';const city=String(p.weatherCity||weatherDefaults.weatherCity).trim(),interval=Math.max(5,Math.min(720,Number(p.weatherIntervalMinutes)||30));if(weatherCitySetting&&document.activeElement!==weatherCitySetting)weatherCitySetting.value=city;if(weatherIntervalSetting)weatherIntervalSetting.value=String(interval);if(weatherUnitSetting)weatherUnitSetting.value=p.weatherUnit||'metric';const c=p.weatherCache,fresh=c&&Number.isFinite(Number(c.latitude))&&Number.isFinite(Number(c.longitude))&&String(c.cityQuery||c.city||'').toLowerCase()===city.toLowerCase()&&Date.now()-Number(c.fetchedAt||0)<interval*60000;if(!force&&fresh){paintWeather(c);return;}let place=p.weatherPlace&&String(p.weatherPlace.label||'').toLowerCase()===city.toLowerCase()?p.weatherPlace:null;if(!place){const gr=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=8&language=${weatherGeocodingLanguage()}&format=json`);if(!gr.ok)throw Error('Geocoding failed');const places=(await gr.json()).results||[];place=places.find(x=>String(x.name||'').toLowerCase()===city.toLowerCase())||places[0];}if(!place)throw Error('City not found');const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=celsius&timezone=auto&forecast_days=7`);if(!r.ok)throw Error('Weather request failed');const w=await r.json(),result={city:place.name,cityQuery:city,latitude:Number(place.latitude),longitude:Number(place.longitude),temperature:w.current?.temperature_2m,code:w.current?.weather_code,daily:w.daily,fetchedAt:Date.now()};if(!Number.isFinite(Number(result.temperature)))throw Error('Weather data unavailable');await chrome.storage.local.set({weatherCache:result});paintWeather(result);}catch(e){console.warn('Private Speed Dial weather:',e.message);try{const {weatherCache}=await chrome.storage.local.get(['weatherCache']);if(weatherCache)paintWeather(weatherCache);}catch(_){}}finally{weatherRequestInProgress=false;if(weatherRefreshPending){weatherRefreshPending=false;fetchWeather(true);}}}
   function hideWeatherSuggestions(){if(weatherCitySuggestions){weatherCitySuggestions.hidden=true;weatherCitySuggestions.replaceChildren();}weatherCitySetting?.setAttribute('aria-expanded','false');}
-  function selectWeatherSuggestion(place){const city=String(place.name||'').trim();if(!city)return;const label=[place.name,place.admin1,place.country].filter((v,i,a)=>v&&a.indexOf(v)===i).join(', ');weatherCitySetting.value=label;hideWeatherSuggestions();weatherCitySetting.blur();if(weatherCityLabel)weatherCityLabel.textContent=city;if(weatherWidget)weatherWidget.hidden=false;weatherRequestInProgress=false;weatherRefreshPending=false;chrome.storage.local.set({weatherCity:label,weatherPlace:{...place,label},weatherCache:null});}
-  async function suggestWeatherCities(query){if(!weatherCitySuggestions||query.trim().length<2){hideWeatherSuggestions();return;}try{weatherSuggestController?.abort();weatherSuggestController=new AbortController();const response=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query.trim())}&count=8&language=en&format=json`,{signal:weatherSuggestController.signal});if(!response.ok)throw Error('City suggestions unavailable');const places=(await response.json()).results||[];if(query.trim()!==weatherCitySetting.value.trim())return;weatherCitySuggestions.replaceChildren();for(const place of places){const button=document.createElement('button');button.type='button';button.className='weather-city-suggestion';button.role='option';button.textContent=[place.name,place.admin1,place.country].filter((v,i,a)=>v&&a.indexOf(v)===i).join(', ');button.addEventListener('click',()=>selectWeatherSuggestion(place));weatherCitySuggestions.append(button);}if(!places.length){const empty=document.createElement('div');empty.className='weather-city-suggestions-empty';empty.textContent=wt('No cities found');weatherCitySuggestions.append(empty);}weatherCitySuggestions.hidden=false;weatherCitySetting.setAttribute('aria-expanded','true');}catch(error){if(error.name!=='AbortError')hideWeatherSuggestions();}}
+  function selectWeatherSuggestion(place){const city=String(place.name||'').trim();if(!city)return;const label=[place.name,place.admin1,place.country].filter((v,i,a)=>v&&a.indexOf(v)===i).join(', ');weatherCitySetting.value=label;hideWeatherSuggestions();weatherCitySetting.blur();if(weatherCityLabel)weatherCityLabel.textContent=city;if(weatherWidget)weatherWidget.hidden=false;weatherRequestInProgress=false;weatherRefreshPending=false;chrome.storage.local.set({weatherCity:label,weatherPlace:{...place,label},weatherCache:null}).then(()=>fetchWeather(true)).catch(error=>console.warn('Private Speed Dial city selection:',error.message));}
+  async function suggestWeatherCities(query){if(!weatherCitySuggestions||!weatherCitySetting||query.trim().length<2){hideWeatherSuggestions();return;}try{weatherSuggestController?.abort();weatherSuggestController=new AbortController();const language=weatherGeocodingLanguage();const response=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query.trim())}&count=8&language=${encodeURIComponent(language)}&format=json`,{signal:weatherSuggestController.signal,cache:'no-store'});if(!response.ok)throw Error('City suggestions unavailable');const places=(await response.json()).results||[];if(query.trim()!==weatherCitySetting.value.trim())return;weatherCitySuggestions.replaceChildren();for(const place of places){const button=document.createElement('button');button.type='button';button.className='weather-city-suggestion';button.setAttribute('role','option');button.textContent=[place.name,place.admin1,place.country].filter((v,i,a)=>v&&a.indexOf(v)===i).join(', ');button.addEventListener('mousedown',event=>event.preventDefault());button.addEventListener('click',()=>selectWeatherSuggestion(place));weatherCitySuggestions.append(button);}if(!places.length){const empty=document.createElement('div');empty.className='weather-city-suggestions-empty';empty.textContent=wt('No cities found');weatherCitySuggestions.append(empty);}weatherCitySuggestions.hidden=false;weatherCitySetting.setAttribute('aria-expanded','true');}catch(error){if(error.name!=='AbortError'){weatherCitySuggestions.replaceChildren();const empty=document.createElement('div');empty.className='weather-city-suggestions-empty';empty.textContent=wt('City suggestions unavailable');weatherCitySuggestions.append(empty);weatherCitySuggestions.hidden=false;weatherCitySetting.setAttribute('aria-expanded','true');console.warn('Private Speed Dial city suggestions:',error.message);}}}
   weatherCitySetting?.addEventListener('input',()=>{clearTimeout(weatherSuggestTimer);weatherSuggestTimer=setTimeout(()=>suggestWeatherCities(weatherCitySetting.value),250);});
   weatherCitySetting?.addEventListener('focus',()=>{if(weatherCitySetting.value.trim().length>=2)suggestWeatherCities(weatherCitySetting.value);});
   weatherCitySetting?.addEventListener('blur',()=>setTimeout(hideWeatherSuggestions,180));
   weatherUnitSetting?.addEventListener('change',async()=>{window.__psdWeatherUnit=weatherUnitSetting.value;await chrome.storage.local.set({weatherUnit:weatherUnitSetting.value});const {weatherCache}=await chrome.storage.local.get(['weatherCache']);if(weatherCache)paintWeather(weatherCache);});weatherCitySetting?.addEventListener('change',async()=>{const city=weatherCitySetting.value.trim()||weatherDefaults.weatherCity;await chrome.storage.local.set({weatherCity:city,weatherPlace:null});fetchWeather(true);});weatherCitySetting?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();weatherCitySetting.blur();}});weatherIntervalSetting?.addEventListener('change',async()=>{await chrome.storage.local.set({weatherIntervalMinutes:Math.max(5,Math.min(720,Number(weatherIntervalSetting.value)||30))});fetchWeather(true);});
   chrome.storage.onChanged.addListener((c,area)=>{if(area==='local'){if(c.searchbarFontColor)applyWeatherTextColor(c.searchbarFontColor.newValue);if(c.weatherCity){const next=String(c.weatherCity.newValue||weatherDefaults.weatherCity);if(weatherCitySetting&&document.activeElement!==weatherCitySetting)weatherCitySetting.value=next;if(weatherCityLabel)weatherCityLabel.textContent=next.split(',')[0].trim();if(c.weatherCity.oldValue!==c.weatherCity.newValue){chrome.storage.local.set({weatherCache:null});fetchWeather(true);}}if(c.weatherUnit){window.__psdWeatherUnit=c.weatherUnit.newValue||'metric';chrome.storage.local.get(['weatherCache'],r=>{if(r.weatherCache)paintWeather(r.weatherCache);});}}});chrome.storage.local.get({...weatherDefaults,weatherCache:null,searchbarFontColor:'#1d1d1f'},p=>{if(weatherCitySetting)weatherCitySetting.value=p.weatherCity||weatherDefaults.weatherCity;if(weatherIntervalSetting)weatherIntervalSetting.value=String(p.weatherIntervalMinutes||30);window.__psdWeatherUnit=p.weatherUnit||'metric';if(weatherUnitSetting)weatherUnitSetting.value=window.__psdWeatherUnit;applyWeatherTextColor(p.searchbarFontColor);if(p.weatherCache)paintWeather(p.weatherCache);fetchWeather(false);});
 
-  const darkThemeToggle = null;
-  function applyDarkTheme(enabled) {
+
+  // Keep the weather indicator's inline colour in sync with Search bar text preferences.
+  document.getElementById('searchbar-font-color')?.addEventListener('input', (event) => {
+    document.documentElement.style.setProperty('--searchbar-text', event.currentTarget.value);
+    applyWeatherTextColor(event.currentTarget.value);
+  });
+  document.getElementById('searchbar-font-color')?.addEventListener('change', (event) => {
+    document.documentElement.style.setProperty('--searchbar-text', event.currentTarget.value);
+    applyWeatherTextColor(event.currentTarget.value);
+  });
+
+function applyDarkTheme(enabled) {
     const active = Boolean(enabled);
     document.body.classList.toggle('dark-theme', active);
     document.documentElement.classList.toggle('psd-startup-dark', active);
     document.documentElement.classList.toggle('psd-startup-light', !active);
     document.documentElement.style.colorScheme = active ? 'dark' : 'light';
     try { localStorage.setItem('psd-dark-theme-hint', active ? '1' : '0'); } catch (_) {}
-    if (darkThemeToggle) darkThemeToggle.checked = active;
   }
   const darkThemeColorPalette = {
     'bg-color-picker': '#1c1e22',
@@ -316,37 +329,6 @@ document.addEventListener('DOMContentLoaded', () => {
       applyVignette({ enabled: document.getElementById('vignette-enabled')?.checked, color: vignette?.value, size: document.getElementById('vignette-size')?.value, opacity: document.getElementById('vignette-opacity')?.value }, true);
     }
   }
-
-  const shortcutsContainer = document.getElementById('shortcuts-container');
-  const dialRows = document.getElementById('dial-rows');
-  const bgColorPicker = document.getElementById('bg-color-picker');
-  const glowColorPicker = document.getElementById('glow-color-picker');
-  const glowOpacityInput = document.getElementById('glow-opacity');
-  const glowOpacityValue = document.getElementById('glow-opacity-value');
-  const glowEnabled = document.getElementById('glow-enabled');
-  const vignetteEnabled = document.getElementById('vignette-enabled');
-  const vignetteColor = document.getElementById('vignette-color-picker');
-  const vignetteSize = document.getElementById('vignette-size');
-  const vignetteOpacity = document.getElementById('vignette-opacity');
-  function applyVignette(settings, persist = false) {
-    const enabled = Boolean(settings.enabled);
-    const color = /^#[0-9a-f]{6}$/i.test(settings.color || '') ? settings.color : '#000000';
-    const size = Math.max(5, Math.min(100, Number(settings.size ?? 45)));
-    const opacity = Math.max(0, Math.min(100, Number(settings.opacity ?? 45)));
-    document.documentElement.style.setProperty('--vignette-color', color);
-    document.documentElement.style.setProperty('--vignette-size', `${size}%`);
-    document.documentElement.style.setProperty('--vignette-opacity', enabled ? String(opacity / 100) : '0');
-    if (vignetteEnabled) vignetteEnabled.checked = enabled;
-    if (vignetteColor) vignetteColor.value = color;
-    if (vignetteSize) vignetteSize.value = String(size);
-    if (vignetteOpacity) vignetteOpacity.value = String(opacity);
-    const sizeLabel = document.getElementById('vignette-size-value');
-    const opacityLabel = document.getElementById('vignette-opacity-value');
-    if (sizeLabel) sizeLabel.textContent = `${size}%`;
-    if (opacityLabel) opacityLabel.textContent = `${opacity}%`;
-    if (persist) safeSyncSet({ vignetteEnabled: enabled, vignetteColor: color, vignetteSize: size, vignetteOpacity: opacity });
-  }
-
 
   const customizeBtn = document.getElementById('customize-btn');
   const controlsPanel = document.getElementById('controls-panel');
@@ -488,6 +470,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Saved settings may populate range values asynchronously; sync after those updates.
   [0, 50, 150, 300, 600, 1000].forEach((delay) => setTimeout(scheduleMaterialSliderProgressUpdate, delay));
 
+  // Core DOM references (restored after Community Edition cleanup).
+  const shortcutsContainer = document.getElementById('shortcuts-container');
+  const dialRows = document.getElementById('dial-rows');
+  const bgColorPicker = document.getElementById('bg-color-picker');
+  // Background glow controls (these declarations were accidentally removed
+  // during Community Edition cleanup, causing loadTheme() to throw).
+  const glowEnabled = document.getElementById('glow-enabled');
+  const glowColorPicker = document.getElementById('glow-color-picker');
+  const glowOpacityInput = document.getElementById('glow-opacity');
+  const glowOpacityValue = document.getElementById('glow-opacity-value');
   if (!shortcutsContainer || !dialRows ||
       !customizeBtn || !controlsPanel ||
       !editModal || !modalTitle || !modalName || !modalUrl || !modalCancel || !modalDone ||
@@ -518,20 +510,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const now = new Date();
     const locale = getClockLocale();
     const use24Hour = clock24HourInput ? clock24HourInput.checked : document.documentElement.lang !== 'en';
-    const timeParts = new Intl.DateTimeFormat(locale, use24Hour
+    clockTime.textContent = new Intl.DateTimeFormat(locale, use24Hour
       ? { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
-      : { hour: 'numeric', minute: '2-digit', hour12: true }).formatToParts(now);
-    clockTime.replaceChildren();
-    timeParts.forEach((part) => {
-      if (!use24Hour && part.type === 'dayPeriod') {
-        const period = document.createElement('span');
-        period.className = 'clock-period';
-        period.textContent = now.getHours() < 12 ? 'a.m.' : 'p.m.';
-        clockTime.appendChild(period);
-      } else if (part.type !== 'dayPeriod') {
-        clockTime.appendChild(document.createTextNode(part.value));
-      }
-    });
+      : { hour: 'numeric', minute: '2-digit', hour12: true }).format(now);
     clockDate.textContent = new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(now);
     clockDate.textContent = clockDate.textContent.charAt(0).toLocaleUpperCase(locale) + clockDate.textContent.slice(1);
   }
@@ -539,9 +520,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Refresh immediately when the selected interface language changes.
   document.addEventListener('change', (event) => {
     if (event.target?.id === 'language-select') updateClock();
-  });
-  chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === 'local' && changes.privateSpeedDialLanguage) updateClock();
   });
 
   function startClock() {
@@ -729,7 +707,52 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!theme) return;
     currentTheme = themeName;
     applyThemeVars(theme.vars);
+    const root = document.documentElement;
+    const color = theme.vars['--bg-color'] || '#ffffff';
+    root.style.backgroundColor = color;
+    root.style.backgroundImage = 'none';
+    const layer = document.getElementById('page-background-layer');
+    if (layer) {
+      layer.style.setProperty('background-color', color, 'important');
+      layer.style.setProperty('background-image', 'none', 'important');
+    }
     updateSwatchActive(themeName);
+  }
+
+  function applyCustomBackground(dataUrl, fadeOnNewTab = false) {
+    if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/')) return;
+    currentTheme = 'custom';
+    try { localStorage.setItem('psd-bg-mode-hint', 'custom-image'); } catch (_) {}
+    // Mantém a paleta da interface atual, mas aplica a imagem na camada que
+    // realmente cobre o fundo da página (a variável, por si só, não era pintada).
+    applyThemeVars(document.body.classList.contains('dark-theme') ? THEMES.dark.vars : THEMES.light.vars);
+    const cssImage = `url("${dataUrl}")`;
+    document.documentElement.style.setProperty('--bg-image', cssImage);
+    let imageFallbackColor = '#ffffff';
+    try {
+      const cachedColor = localStorage.getItem('psd-bg-color-hint') || '';
+      if (/^#[0-9a-f]{6}$/i.test(cachedColor)) imageFallbackColor = cachedColor;
+    } catch (_) {}
+    document.documentElement.style.setProperty('--bg-color', imageFallbackColor);
+    document.documentElement.style.backgroundColor = imageFallbackColor;
+    document.documentElement.style.backgroundImage = 'none';
+    const backgroundLayer = document.getElementById('page-background-layer');
+    if (backgroundLayer) {
+      // Custom images are painted directly, with no image-only fade animation.
+      backgroundLayer.getAnimations().forEach(animation => animation.cancel());
+      backgroundLayer.style.setProperty('background-image', cssImage, 'important');
+      backgroundLayer.style.setProperty('opacity', '1', 'important');
+      backgroundLayer.style.setProperty('background-color', imageFallbackColor, 'important');
+      backgroundLayer.style.setProperty('background-size', 'cover', 'important');
+      backgroundLayer.style.setProperty('background-position', 'center center', 'important');
+      backgroundLayer.style.setProperty('background-repeat', 'no-repeat', 'important');
+    }
+    // The body must remain transparent so it cannot cover the image layer.
+    document.body.style.setProperty('background-color', 'transparent', 'important');
+    document.body.style.setProperty('background-image', 'none', 'important');
+    if (bgColorPicker) bgColorPicker.value = document.body.classList.contains('dark-theme') ? '#1c1e22' : '#ffffff';
+    window.syncColorPickerSwatches?.();
+    updateSwatchActive('custom');
   }
 
   function applyGlowSettings(color, opacity, persist = false) {
@@ -745,6 +768,49 @@ document.addEventListener('DOMContentLoaded', () => {
     if (persist) safeSyncSet({ glowColor: safeColor, glowOpacity: safeOpacity, glowEnabled: enabled });
   }
 
+  function applyCustomColor(color) {
+    if (!/^#[0-9a-f]{6}$/i.test(color)) return;
+    currentTheme = 'custom-color';
+    try {
+      localStorage.setItem('psd-bg-mode-hint', 'solid-color');
+      localStorage.setItem('psd-bg-color-hint', color);
+      localStorage.removeItem('psd-custom-bg-image-hint');
+    } catch (_) {}
+    // A solid colour supersedes any previously uploaded image.
+    chrome.storage.local.remove('customBgImage');
+    // Não repõe a paleta clara: apenas altera o fundo da página, mantendo os
+    // restantes elementos da interface no tema atualmente selecionado.
+    applyThemeVars(document.body.classList.contains('dark-theme') ? THEMES.dark.vars : THEMES.light.vars);
+    document.documentElement.style.setProperty('--bg-color', color);
+    document.documentElement.style.setProperty('--bg-image', 'none');
+    // Chrome's root canvas has an inline colour from startup-theme.js. Update it
+    // too: the background layer sits behind the root canvas and cannot override it.
+    document.documentElement.style.backgroundColor = color;
+    document.documentElement.style.backgroundImage = 'none';
+    // The visible background is painted by this layer, so update it directly as
+    // well as the CSS variables. This also overrides any stale startup paint.
+    const backgroundLayer = document.getElementById('page-background-layer');
+    if (backgroundLayer) {
+      backgroundLayer.style.setProperty('background-color', color, 'important');
+      backgroundLayer.style.setProperty('background-image', 'none', 'important');
+    }
+    document.body.style.setProperty('background-color', color, 'important');
+    document.body.style.setProperty('background-image', 'none', 'important');
+    document.documentElement.style.setProperty('--bg-color', color);
+    document.documentElement.style.setProperty('--bg-image', 'none');
+    if (bgColorPicker) bgColorPicker.value = color;
+    // No tema claro, alterar o fundo não deve aplicar contraste automático ao texto.
+    // Mantém as cores escolhidas nos seletores do relógio, da data e do botão.
+    if (!document.body.classList.contains('dark-theme')) {
+      if (clockColor?.value) clockTime.style.color = clockColor.value;
+      if (dateColor?.value) clockDate.style.color = dateColor.value;
+      if (buttonFontColor?.value) customizeBtn.style.color = buttonFontColor.value;
+    }
+    window.syncColorPickerSwatches?.();
+    clearTimeout(colorSaveTimer);
+    colorSaveTimer = setTimeout(() => safeSyncSet({ theme: 'custom-color', customBgColor: color }), 500);
+  }
+
   function updateSwatchActive(themeName) {
     document.querySelectorAll('.theme-swatch').forEach(s => {
       s.classList.toggle('active', s.dataset.theme === themeName);
@@ -756,28 +822,156 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function loadTheme() {
-    chrome.storage.local.get(['glowColor', 'glowOpacity', 'glowEnabled'], (result) => {
-      applyDarkTheme(false);
+    chrome.storage.local.get(['theme', 'customBgColor', 'glowColor', 'glowOpacity', 'glowEnabled', 'darkTheme'], (result) => {
+      if (glowEnabled) glowEnabled.checked = result.glowEnabled ?? true;
       applyGlowSettings(result.glowColor || '#a8c7fa', result.glowOpacity ?? 10);
-      document.documentElement.style.setProperty('--bg-color', '#ffffff');
-      document.documentElement.style.setProperty('--bg-image', 'none');
-      document.body.style.setProperty('background-color', 'transparent', 'important');
-      document.body.style.setProperty('background-image', 'none', 'important');
-      const backgroundLayer = document.getElementById('page-background-layer');
-      if (backgroundLayer) {
-        backgroundLayer.style.setProperty('background-color', '#ffffff', 'important');
-        backgroundLayer.style.setProperty('background-image', 'none', 'important');
+      if (result.theme === 'custom') {
+        chrome.storage.local.get(['customBgImage'], async (localResult) => {
+          if (localResult.customBgImage) {
+            applyCustomBackground(localResult.customBgImage, true);
+            // Migrate backgrounds saved by older builds: the previous build put
+            // the full-resolution data URL into localStorage, which can exceed
+            // quota or take longer to decode. Create the compact first-paint
+            // cache only when it is absent/oversized, not on every new tab.
+            try {
+              const cachedStartupImage = localStorage.getItem('psd-custom-bg-image-hint') || '';
+              if (!cachedStartupImage || cachedStartupImage.length > 1400000) {
+                const optimized = await resizeImage(localResult.customBgImage, 1920, 0.84);
+                localStorage.setItem('psd-bg-mode-hint', 'custom-image');
+                localStorage.setItem('psd-bg-color-hint', optimized.fallbackColor);
+                localStorage.setItem('psd-custom-bg-image-hint', optimized.startupDataUrl);
+              }
+            } catch (_) {}
+          } else { applyTheme(result.darkTheme ? 'dark' : 'light'); saveTheme(result.darkTheme ? 'dark' : 'light'); }
+          window.syncColorPickerSwatches?.();
+        });
+      } else if (result.theme === 'custom-color' && result.customBgColor) {
+        try { localStorage.setItem('psd-bg-mode-hint', 'solid-color'); localStorage.setItem('psd-bg-color-hint', result.customBgColor); localStorage.removeItem('psd-custom-bg-image-hint'); } catch (_) {}
+        chrome.storage.local.remove('customBgImage');
+        // Remove the temporary startup paint so the saved custom colour can win.
+        document.documentElement.classList.remove('psd-startup-dark', 'psd-startup-light');
+        applyCustomColor(result.customBgColor);
+      } else {
+        const defaultBackground = result.darkTheme ? '#1c1e22' : '#ffffff';
+        try { localStorage.setItem('psd-bg-mode-hint', 'default-color'); localStorage.setItem('psd-bg-color-hint', defaultBackground); localStorage.removeItem('psd-custom-bg-image-hint'); } catch (_) {}
+        chrome.storage.local.remove('customBgImage');
+        applyTheme(result.darkTheme ? 'dark' : 'light');
+        document.documentElement.style.setProperty('--bg-color', defaultBackground);
+        document.documentElement.style.setProperty('--bg-image', 'none');
+        if (bgColorPicker) bgColorPicker.value = defaultBackground;
+        window.syncColorPickerSwatches?.();
+        saveTheme(result.darkTheme ? 'dark' : 'light');
       }
-      try {
-        localStorage.setItem('psd-dark-theme-hint', '0');
-        localStorage.setItem('psd-bg-mode-hint', 'default-color');
-        localStorage.setItem('psd-bg-color-hint', '#ffffff');
-        localStorage.removeItem('psd-custom-bg-image-hint');
-      } catch (_) {}
-      chrome.storage.local.remove(['customBgImage', 'customBgColor', 'darkTheme']);
-      saveTheme('light');
-      window.syncColorPickerSwatches?.();
     });
+  }
+
+  function resizeImage(dataUrl, maxSize, quality) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const ratio = Math.min(1, maxSize / img.width, maxSize / img.height);
+          const w = Math.max(1, Math.round(img.width * ratio));
+          const h = Math.max(1, Math.round(img.height * ratio));
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          if (!ctx) throw new Error('Canvas unavailable');
+          ctx.drawImage(img, 0, 0, w, h);
+          // A small average-colour sample is cached separately. It is painted
+          // immediately while Chrome asynchronously decodes the full image.
+          const sample = document.createElement('canvas');
+          sample.width = 24; sample.height = 24;
+          const sampleCtx = sample.getContext('2d', { willReadFrequently: true });
+          sampleCtx.drawImage(img, 0, 0, 24, 24);
+          const pixels = sampleCtx.getImageData(0, 0, 24, 24).data;
+          let r = 0, g = 0, b = 0, count = 0;
+          for (let i = 0; i < pixels.length; i += 4) {
+            if (pixels[i + 3] < 16) continue;
+            r += pixels[i]; g += pixels[i + 1]; b += pixels[i + 2]; count++;
+          }
+          const hex = count ? '#' + [r/count, g/count, b/count].map(v => Math.round(v).toString(16).padStart(2, '0')).join('') : '#ffffff';
+          // Make a much smaller startup-only copy. localStorage is quota-limited, and
+          // storing the full background there can fail silently; even when it
+          // succeeds, decoding a large image delays the first painted frame.
+          // The small copy lets the browser paint the same image immediately,
+          // then the full-quality stored image replaces it after startup.
+          const startup = document.createElement('canvas');
+          const startupRatio = Math.min(1, 960 / img.width, 960 / img.height);
+          startup.width = Math.max(1, Math.round(img.width * startupRatio));
+          startup.height = Math.max(1, Math.round(img.height * startupRatio));
+          const startupCtx = startup.getContext('2d');
+          if (!startupCtx) throw new Error('Startup canvas unavailable');
+          startupCtx.drawImage(img, 0, 0, startup.width, startup.height);
+          const startupDataUrl = startup.toDataURL('image/jpeg', 0.55);
+          resolve({ dataUrl: canvas.toDataURL('image/jpeg', quality), startupDataUrl, fallbackColor: hex });
+        } catch (error) { reject(error); }
+      };
+      img.onerror = () => reject(new Error('Image decoding failed'));
+      img.src = dataUrl;
+    });
+  }
+
+  function handleImageUpload(file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('O ficheiro selecionado não é uma imagem suportada. Escolhe PNG, JPEG, WebP, GIF ou outro formato de imagem compatível com o Chrome.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onerror = () => alert('Não foi possível ler este ficheiro de imagem. Tenta novamente ou escolhe outra imagem.');
+    reader.onload = async (e) => {
+      const originalDataUrl = e.target?.result;
+      if (typeof originalDataUrl !== 'string' || !originalDataUrl.startsWith('data:image/')) {
+        alert('Não foi possível ler este ficheiro como imagem. Escolhe outro formato.');
+        return;
+      }
+
+      // Verifica se o descodificador de imagens do Chrome consegue realmente
+      // abrir o ficheiro antes de o guardar/aplicar. Alguns ficheiros aceites
+      // por `image/*` (por exemplo HEIC/HEIF em muitas versões do Chrome) não
+      // são descodificáveis pelo browser e não podem ser usados como fundo.
+      const probe = new Image();
+      try {
+        await new Promise((resolve, reject) => {
+          probe.onload = resolve;
+          probe.onerror = () => reject(new Error('Formato de imagem não suportado pelo Chrome'));
+          probe.src = originalDataUrl;
+        });
+      } catch {
+        alert('O Chrome não consegue abrir este formato de imagem. Converte a imagem para PNG, JPEG ou WebP e tenta novamente.');
+        return;
+      }
+
+      // Normaliza imagens muito grandes antes de as guardar. A imagem otimizada
+      // reduz tanto o tempo de descodificação em cada separador como o tamanho da
+      // dica síncrona usada para o primeiro paint.
+      let optimized;
+      try { optimized = await resizeImage(originalDataUrl, 1920, 0.84); }
+      catch {
+        alert('Não foi possível otimizar esta imagem. Tenta guardá-la como JPEG, PNG ou WebP e volta a selecionar o ficheiro.');
+        return;
+      }
+      const imageDataUrl = optimized.dataUrl;
+      const fallbackColor = optimized.fallbackColor;
+      chrome.storage.local.set({ customBgImage: imageDataUrl, backgroundPreset: null }, () => {
+        if (chrome.runtime.lastError) {
+          console.error('Failed to save background image:', chrome.runtime.lastError.message);
+          alert('Não foi possível guardar esta imagem. Tenta uma imagem menor.');
+          return;
+        }
+        try {
+          localStorage.setItem('psd-bg-mode-hint', 'custom-image');
+          localStorage.setItem('psd-bg-color-hint', fallbackColor);
+          localStorage.setItem('psd-custom-bg-image-hint', optimized.startupDataUrl);
+        } catch (_) {}
+        applyCustomBackground(imageDataUrl, false);
+        saveTheme('custom');
+      });
+    };
+    reader.readAsDataURL(file);
   }
 
   // ===== Shortcut Functions =====
@@ -1004,7 +1198,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function saveClockPreferences() {
     const prefs = {
-      darkTheme: false,
+      darkTheme: Boolean(document.getElementById('dark-theme-toggle')?.checked),
       clockFontFamily: clockFontFamily.value, clockFontSize: Number(clockFontSize.value) || 82, clockFontWeight: Number(clockFontWeight.value) || 300,
       dateFontFamily: dateFontFamily.value, dateFontSize: Number(dateFontSize.value) || 17, dateFontWeight: Number(dateFontWeight.value) || 400,
       hideClock: !document.getElementById('hide-clock')?.checked, hideDate: !document.getElementById('hide-date')?.checked, clock24Hour: Boolean(clock24HourInput?.checked), clockColor: clockColor.value, dateColor: dateColor.value, separatorColor: separatorColor?.value || '#8b8b95', separatorOpacity: Number(separatorOpacity?.value ?? 55), separatorThickness: Number(separatorThickness?.value ?? 2), separatorVertical: Number(separatorVertical?.value ?? 0), dialButtonSeparatorColor: dialButtonSeparatorColor?.value || '#8b8b95', dialButtonSeparatorOpacity: Number(dialButtonSeparatorOpacity?.value ?? 55), dialButtonSeparatorThickness: Number(dialButtonSeparatorThickness?.value ?? 2), dialButtonSeparatorVertical: Number(dialButtonSeparatorVertical?.value ?? 0), clockVertical: Number(clockVertical.value) || 0, clockHorizontal: Number(clockHorizontal?.value ?? 0), dateOrder: dateOrderInput?.value || 'below', clockAlignment: document.querySelector('.clock-alignment-option.active')?.dataset.clockAlignment || 'left', clockDateDistance: Number(clockDateDistanceInput?.value ?? 8), buttonHorizontal: Number(buttonHorizontal?.value ?? 0), buttonVertical: Number(buttonVertical.value) || 0, buttonLabel: buttonLabelCustom && buttonLabel ? buttonLabel.value.slice(0, 60) : '', buttonLabelCustom: Boolean(buttonLabelCustom && buttonLabel?.value.trim()), buttonWidth: Number(buttonWidth?.value ?? 120), buttonHeight: Number(buttonHeight?.value ?? 40), buttonShape: Number(buttonShape?.value ?? 50), buttonOpacity: Number(buttonOpacity?.value ?? 100), buttonBackgroundColor: buttonBackgroundColor?.value || '#f2f2f3',
@@ -1099,7 +1293,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.storage.local.get(['shortcutCount', 'shortcuts', 'clockFontFamily', 'clockFontSize', 'clockFontWeight', 'dateFontFamily', 'dateFontSize', 'dateFontWeight', 'clockColor', 'dateColor', 'clockVertical', 'dateVertical', 'clockHorizontal', 'dateHorizontal', 'buttonHorizontal', 'buttonVertical', 'buttonLabel', 'buttonWidth', 'buttonHeight', 'buttonShape', 'buttonOpacity', 'buttonBackgroundColor', 'dialTitleGap', 'dialMaxWidth', 'dialGridHeight', 'dialGridLinesOpacity', 'dialShape', 'dialFaviconShape', 'dialEntryDuration', 'dialFadeEnabled', 'dialPhoneEnabled', 'dialPhoneDuration', 'dialIconGlowColor', 'dialIconGlowOpacity', 'dialIconGlowSize', 'dialColumns', 'dialRows', 'dialIconSize', 'dialFaviconSize', 'dialBackgroundColor', 'dialBorderColor', 'dialBorderThickness', 'dialBorderOpacity', 'dialTitleSize', 'dialTitleFontFamily', 'dialTitleColor', 'buttonFontFamily', 'buttonFontSize', 'buttonFontColor', 'buttonGlowSize', 'buttonGlowOpacity', 'buttonGlowColor', 'hideClock', 'hideDate', 'clock24Hour', 'clockAlignment', 'dateOrder', 'clockDateDistance', 'separatorColor', 'separatorOpacity', 'separatorThickness', 'separatorVertical', 'dialButtonSeparatorColor', 'dialButtonSeparatorOpacity', 'dialButtonSeparatorThickness', 'dialButtonSeparatorVertical', 'glowSize', 'glowPosition', 'darkTheme'], (result) => {
       if (clock24HourInput) clock24HourInput.checked = result.clock24Hour ?? (document.documentElement.lang !== 'en');
       updateClock();
-      applyDarkTheme(false);
+      applyDarkTheme(result.darkTheme ?? false);
       chrome.storage.local.get(Object.keys(searchbarDefaults), applySearchbar);
       // Aplicar todas as preferências e construir os dials antes de revelar
       // os divisores: evita que apareçam durante o layout inicial e depois saltem.
@@ -1867,105 +2061,6 @@ document.addEventListener('DOMContentLoaded', () => {
   controlsBackdrop.addEventListener('click', closeSettings);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { controlsPanel.classList.add('hidden'); controlsBackdrop.classList.add('hidden'); document.body.classList.remove('settings-open'); customizeBtn.setAttribute('aria-expanded', 'false'); } });
 
-  // Importar os favoritos de uma pasta do navegador para os dials.
-  const bookmarkFolderSelect = document.getElementById('bookmark-folder-select');
-
-  // This option is created dynamically by the bookmarks API, so it is not
-  // reliably covered by the normal static-HTML translation pass. Keep an
-  // explicit, language-keyed label and reapply it after locale switching.
-  const bookmarkFolderPlaceholderLabels = {
-    en: 'Select folder…',
-    pt: 'Selecionar pasta…',
-    es: 'Seleccionar carpeta…',
-    fr: 'Sélectionner un dossier…',
-    de: 'Ordner auswählen…'
-  };
-  const bookmarkFolderErrorLabels = {
-    en: 'Could not load bookmark folders',
-    pt: 'Não foi possível carregar as pastas de favoritos',
-    es: 'No se pudieron cargar las carpetas de marcadores',
-    fr: 'Impossible de charger les dossiers de favoris',
-    de: 'Lesezeichenordner konnten nicht geladen werden'
-  };
-  function getBookmarkFolderLabel(labels) {
-    const language = window.PrivateSpeedDialI18n?.language || document.getElementById('language-select')?.value || 'en';
-    return labels[language] || labels.en;
-  }
-  function updateBookmarkFolderPlaceholder() {
-    if (!bookmarkFolderSelect) return;
-    const placeholder = bookmarkFolderSelect.querySelector('option[value=""]');
-    if (!placeholder) return;
-    const language = window.PrivateSpeedDialI18n?.language || document.getElementById('language-select')?.value || 'en';
-    placeholder.textContent = bookmarkFolderPlaceholderLabels[language] || bookmarkFolderPlaceholderLabels.en;
-  }
-  document.getElementById('language-select')?.addEventListener('change', () => {
-    // locales.js also listens for change; apply after its synchronous and next-frame passes.
-    queueMicrotask(updateBookmarkFolderPlaceholder);
-    requestAnimationFrame(updateBookmarkFolderPlaceholder);
-    setTimeout(updateBookmarkFolderPlaceholder, 0);
-  });
-  function populateBookmarkFolders() {
-    if (!bookmarkFolderSelect || !chrome.bookmarks?.getTree) return;
-    chrome.bookmarks.getTree((tree) => {
-      if (chrome.runtime.lastError) {
-        bookmarkFolderSelect.innerHTML = '';
-        const errorOption = document.createElement('option');
-        errorOption.value = '';
-        errorOption.textContent = getBookmarkFolderLabel(bookmarkFolderErrorLabels);
-        bookmarkFolderSelect.appendChild(errorOption);
-        return;
-      }
-      bookmarkFolderSelect.innerHTML = '';
-      const placeholderOption = document.createElement('option');
-      placeholderOption.value = '';
-      placeholderOption.textContent = getBookmarkFolderLabel(bookmarkFolderPlaceholderLabels);
-      bookmarkFolderSelect.appendChild(placeholderOption);
-      const walk = (nodes, depth = 0) => {
-        for (const node of nodes || []) {
-          if (Array.isArray(node.children)) {
-            const option = document.createElement('option');
-            option.value = node.id;
-            option.textContent = `${'　'.repeat(depth)}${node.title || 'Unnamed folder'}`;
-            bookmarkFolderSelect.appendChild(option);
-            walk(node.children, depth + 1);
-          }
-        }
-      };
-      walk(tree);
-      updateBookmarkFolderPlaceholder();
-    });
-  }
-
-  populateBookmarkFolders();
-  const importSelectedBookmarkFolder = () => {
-    const folderId = bookmarkFolderSelect?.value;
-    if (!folderId) {
-      return;
-    }
-    chrome.bookmarks.getSubTree(folderId, (nodes) => {
-      if (chrome.runtime.lastError || !nodes?.[0]) {
-        window.alert('Could not read the selected bookmark folder.');
-        return;
-      }
-      const imported = (nodes[0].children || [])
-        .filter(item => typeof item.url === 'string' && /^https?:\/\//i.test(item.url))
-        .map(item => ({ title: item.title || item.url, url: item.url }));
-      if (!imported.length) {
-        window.alert('This folder contains no web bookmarks directly inside it.');
-        return;
-      }
-      shortcuts = imported.slice(0, 100);
-      const columns = Math.max(1, Math.min(10, Number(dialColumns?.value) || 5));
-      dialRowsCount = Math.max(1, Math.min(10, Number(dialRows?.value) || 2));
-      shortcutCount = columns * dialRowsCount;
-      if (shortcuts.length < shortcutCount) shortcuts.length = shortcutCount;
-      saveData();
-      render();
-      window.alert(`Imported ${Math.min(imported.length, 100)} dial(s).`);
-    });
-  };
-  bookmarkFolderSelect?.addEventListener('change', importSelectedBookmarkFolder);
-
   // Exportar uma cópia integral: valores guardados, layout, atalhos e recursos locais.
   // Three horizontal sliders snap to the labelled centre point (Middle).
   [clockHorizontal, buttonHorizontal].forEach((input) => input?.addEventListener('input', () => {
@@ -1979,195 +2074,6 @@ document.addEventListener('DOMContentLoaded', () => {
     saveClockPreferences();
   }));
 
-  const exportSettingsBtn = document.getElementById('export-settings-btn');
-  exportSettingsBtn?.addEventListener('click', () => {
-    // Captura também os valores que estejam atualmente nos controlos, mesmo que o
-    // utilizador exporte imediatamente após os alterar.
-    saveClockPreferences();
-    safeSyncSet({ shortcutCount, shortcuts }, (writeError) => {
-      if (writeError) {
-        console.error('Não foi possível guardar as definições antes da exportação:', chrome.runtime.lastError.message);
-        return;
-      }
-      chrome.storage.local.get(null, (syncSettings) => {
-        if (chrome.runtime.lastError) {
-          console.error('Não foi possível ler as definições sincronizadas:', chrome.runtime.lastError.message);
-          return;
-        }
-        chrome.storage.local.get(null, (localSettings) => {
-          if (chrome.runtime.lastError) {
-            console.error('Não foi possível ler as definições locais:', chrome.runtime.lastError.message);
-            return;
-          }
-          const exportedWeatherCity = String(weatherCitySetting?.value || localSettings.weatherCity || 'London, England, United Kingdom').trim() || 'London, England, United Kingdom';
-          const removeBackupEnvelope = (source) => {
-            const copy = { ...(source || {}) };
-            ['content', 'format', 'schemaVersion', 'exportedAt', 'extensionVersion', 'language', 'searchbarEngine'].forEach((key) => delete copy[key]);
-            return copy;
-          };
-          const cleanSyncSettings = removeBackupEnvelope(syncSettings);
-          const cleanLocalSettings = removeBackupEnvelope(localSettings);
-          const weatherSettings = {
-            weatherCity: exportedWeatherCity,
-            weatherCityLabel: exportedWeatherCity,
-            weatherUnit: weatherUnitSetting?.value === 'imperial' ? 'imperial' : 'metric',
-            weatherIntervalMinutes: Math.max(5, Math.min(720, Number(weatherIntervalSetting?.value || localSettings.weatherIntervalMinutes) || 30))
-          };
-          const exportLocalSettings = { ...cleanLocalSettings, ...weatherSettings };
-          const allSettings = { ...cleanSyncSettings, ...exportLocalSettings, ...weatherSettings, privateSpeedDialLanguage: cleanLocalSettings.privateSpeedDialLanguage || cleanSyncSettings.privateSpeedDialLanguage || 'en' };
-          const backup = {
-            format: 'private-speed-dial-settings',
-            schemaVersion: 3,
-            extensionVersion: chrome.runtime.getManifest().version,
-            exportedAt: new Date().toISOString(),
-            language: allSettings.privateSpeedDialLanguage || 'en',
-            content: {
-              settings: allSettings,
-              syncedSettings: cleanSyncSettings,
-              localSettings: exportLocalSettings,
-              layout: {
-                shortcutCount,
-                columns: allSettings.dialColumns ?? '5',
-                rows: allSettings.dialRows ?? '2',
-                gridHeight: allSettings.dialGridHeight ?? 400,
-                clock: {
-                  fontFamily: allSettings.clockFontFamily ?? 'system',
-                  fontSize: allSettings.clockFontSize ?? 82,
-                  fontWeight: allSettings.clockFontWeight ?? 300,
-                  color: allSettings.clockColor ?? '#1d1d1f',
-                  verticalPosition: allSettings.clockVertical ?? 0,
-                  horizontalPosition: allSettings.clockHorizontal ?? 0
-                },
-                date: {
-                  fontFamily: allSettings.dateFontFamily ?? 'system',
-                  fontSize: allSettings.dateFontSize ?? 17,
-                  fontWeight: allSettings.dateFontWeight ?? 400,
-                  color: allSettings.dateColor ?? '#68686d',
-                  verticalPosition: allSettings.dateVertical ?? 0,
-                  horizontalPosition: allSettings.dateHorizontal ?? 0
-                },
-                customizeButton: {
-                  fontFamily: allSettings.buttonFontFamily ?? 'system',
-                  fontSize: allSettings.buttonFontSize ?? 13,
-                  color: allSettings.buttonFontColor ?? '#1d1d1f',
-                  verticalPosition: allSettings.buttonVertical ?? 0
-                }
-              },
-              dials: shortcuts.map((dial, index) => ({ position: index, ...dial })),
-              background: { theme: 'light' }
-            }
-          };
-          const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json;charset=utf-8' });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = 'private-speed-dial-settings.json';
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 1000);
-        });
-      });
-    });
-  });
-
-  // Import a complete JSON backup exported by Private Speed Dial.
-  const importSettingsBtn = document.getElementById('import-settings-btn');
-  const importSettingsFile = document.getElementById('import-settings-file');
-  importSettingsBtn?.addEventListener('click', () => importSettingsFile?.click());
-  importSettingsFile?.addEventListener('change', () => {
-    const file = importSettingsFile.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      let backup;
-      try {
-        backup = JSON.parse(String(reader.result || ''));
-      } catch (error) {
-        window.alert('O ficheiro não contém JSON válido. Escolhe uma cópia de segurança exportada pelo Private Speed Dial.');
-        importSettingsFile.value = '';
-        return;
-      }
-
-      if (backup && backup.format === 'private-speed-dial-settings' && backup.content && backup.content.settings) {
-        backup = { formato: 'speed-dial-backup-completo', idiomaSelecionado: backup.language || 'en', conteudo: {
-          definicoes: backup.content.settings,
-          definicoesSincronizadas: backup.content.syncedSettings || {},
-          definicoesLocais: backup.content.localSettings || {},
-          dials: Array.isArray(backup.content.dials) ? backup.content.dials : []
-        }};
-      }
-      if (!backup || !['speed-dial-backup-completo', 'speed-dial-flor-backup-completo'].includes(backup.formato) || !backup.conteudo ||
-          !backup.conteudo.definicoes || typeof backup.conteudo.definicoes !== 'object' ||
-          Array.isArray(backup.conteudo.definicoes)) {
-        window.alert('Este ficheiro não é uma cópia de segurança válida do Private Speed Dial.');
-        importSettingsFile.value = '';
-        return;
-      }
-
-      const content = backup.conteudo;
-      const importedSettings = {
-        ...(content.definicoesSincronizadas && typeof content.definicoesSincronizadas === 'object' && !Array.isArray(content.definicoesSincronizadas) ? content.definicoesSincronizadas : {}),
-        ...(content.definicoesLocais && typeof content.definicoesLocais === 'object' && !Array.isArray(content.definicoesLocais) ? content.definicoesLocais : {}),
-        ...content.definicoes
-      };
-      // Ignore a legacy hard-coded search provider in imported backups.
-      delete importedSettings.searchbarEngine;
-      if (!importedSettings.privateSpeedDialLanguage && backup.idiomaSelecionado) {
-        importedSettings.privateSpeedDialLanguage = ['en', 'pt', 'es', 'fr', 'de'].includes(backup.idiomaSelecionado) ? backup.idiomaSelecionado : 'en';
-      }
-      // Preserve weather preferences from exported settings. Older exports may not include the unit.
-      importedSettings.weatherCity = String(importedSettings.weatherCity || 'London, England, United Kingdom').trim() || 'London, England, United Kingdom';
-      importedSettings.weatherCityLabel = importedSettings.weatherCity;
-      importedSettings.weatherUnit = importedSettings.weatherUnit === 'imperial' ? 'imperial' : 'metric';
-      ['content', 'format', 'schemaVersion', 'exportedAt', 'extensionVersion', 'language'].forEach((key) => delete importedSettings[key]);
-      importedSettings.weatherIntervalMinutes = Math.max(5, Math.min(720, Number(importedSettings.weatherIntervalMinutes) || 30));
-      if (importedSettings.weatherCache && String(importedSettings.weatherCache.cityQuery || importedSettings.weatherCache.city || '').toLowerCase() !== importedSettings.weatherCity.toLowerCase()) {
-        importedSettings.weatherCache = null;
-        importedSettings.weatherPlace = null;
-      }
-      const importedDials = Array.isArray(content.dials)
-        ? content.dials.slice(0, 100).map(dial => {
-            if (!dial || typeof dial !== 'object' || Array.isArray(dial)) return null;
-            const copy = { ...dial };
-            if (typeof copy.title === 'string') copy.title = copy.title.slice(0, 60);
-            else if (typeof copy.name === 'string') copy.name = copy.name.slice(0, 60);
-            delete copy.posicao;
-            return copy;
-          }).filter(dial => dial && (typeof dial.url === 'string' || typeof dial.title === 'string' || typeof dial.name === 'string'))
-        : null;
-      if (importedDials) {
-        importedSettings.shortcuts = importedDials;
-        importedSettings.shortcutCount = Math.max(1, Math.min(100, Number(importedSettings.shortcutCount) || importedDials.length || DEFAULT_COUNT));
-        if (importedSettings.shortcuts.length < importedSettings.shortcutCount) {
-          importedSettings.shortcuts.length = importedSettings.shortcutCount;
-        }
-      }
-
-      const confirmed = window.confirm('Importar estas definições irá substituir as definições e os dials atuais. Queres continuar?');
-      if (!confirmed) {
-        importSettingsFile.value = '';
-        return;
-      }
-      chrome.storage.local.set(importedSettings, () => {
-        const error = chrome.runtime.lastError;
-        if (error) {
-          console.error('Erro ao importar definições:', error.message);
-          window.alert('Não foi possível importar as definições. Verifica se o ficheiro é demasiado grande e tenta novamente.');
-          importSettingsFile.value = '';
-          return;
-        }
-        window.alert('Definições importadas com sucesso. A página será atualizada para aplicar todas as alterações.');
-        window.location.reload();
-      });
-    };
-    reader.onerror = () => {
-      window.alert('Não foi possível ler o ficheiro selecionado.');
-      importSettingsFile.value = '';
-    };
-    reader.readAsText(file);
-  });
-
   // A grelha é sempre definida pelo produto colunas x linhas.
   [dialColumns, dialRows].forEach((input) => {
     input?.addEventListener('change', () => {
@@ -2178,6 +2084,62 @@ document.addEventListener('DOMContentLoaded', () => {
       saveData();
       render();
     });
+  });
+  // Community Edition keeps the page background colour selector available.
+  // Apply the colour immediately and persist it through the existing settings path.
+  bgColorPicker?.addEventListener('input', () => applyCustomColor(bgColorPicker.value));
+  bgColorPicker?.addEventListener('change', () => {
+    applyCustomColor(bgColorPicker.value);
+    // Persist immediately on commit so the chosen colour survives new tabs.
+    safeSyncSet({ theme: 'custom-color', customBgColor: bgColorPicker.value });
+  });
+
+  // Keep the background glow controls functional in the Community Edition.
+  glowEnabled?.addEventListener('change', () => {
+    const color = glowColorPicker?.value || '#a8c7fa';
+    const opacity = Number(glowOpacityInput?.value ?? 10);
+    applyGlowSettings(color, opacity, true);
+  });
+  glowColorPicker?.addEventListener('input', () => {
+    applyGlowSettings(glowColorPicker.value, Number(glowOpacityInput?.value ?? 10), true);
+  });
+  glowOpacityInput?.addEventListener('input', () => {
+    applyGlowSettings(glowColorPicker?.value || '#a8c7fa', Number(glowOpacityInput.value), true);
+  });
+
+  // Keep the clock/date controls connected in the Community Edition too.
+  // These listeners were missing from a previous CE cleanup, so the controls
+  // appeared in Settings but did not update the page or persist their values.
+  ['hide-clock', 'hide-date'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', saveClockPreferences);
+  });
+  clock24HourInput?.addEventListener('change', () => {
+    updateClock();
+    saveClockPreferences();
+  });
+  [dateOrderInput, clockDateDistanceInput].forEach(input => {
+    input?.addEventListener('input', saveClockPreferences);
+    input?.addEventListener('change', saveClockPreferences);
+  });
+  document.querySelectorAll('[data-clock-alignment]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-clock-alignment]').forEach(alignmentBtn => {
+        const active = alignmentBtn === btn;
+        alignmentBtn.classList.toggle('active', active);
+        alignmentBtn.setAttribute('aria-pressed', String(active));
+      });
+      saveClockPreferences();
+    });
+  });
+  clockVertical?.addEventListener('input', () => {
+    if (clockWidget) {
+      clockWidget.style.setProperty(
+        'transform',
+        `translate(${Number(clockHorizontal?.value) || 0}px, ${Number(clockVertical.value) || 0}px)`,
+        'important'
+      );
+    }
+    saveClockPreferences();
   });
 
   // Modal handlers
@@ -2281,6 +2243,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Re-apply stored search-bar settings after first-run defaults have been written.
+      // This keeps the search bar and its weather indicator visible on a fresh install.
       chrome.storage.local.get(Object.keys(searchbarDefaults), applySearchbar);
       startClock();
       loadTheme();
@@ -2354,7 +2317,6 @@ function setupSettingsTabs() {
 
   // Keep Language and bookmark import controls compact, above the entire Search settings section.
   const languageTop = panel.querySelector(':scope > .language-section');
-  const bookmarkTop = Array.from(panel.children).find(el => el.matches('.export-row') && el.querySelector('#bookmark-folder-select'));
 
   const children = Array.from(panel.children);
   const searchIndex = children.indexOf(searchSection);
@@ -2363,22 +2325,21 @@ function setupSettingsTabs() {
   const searchbar = afterSearch.find(el => el.matches('.searchbar-settings'));
   const background = afterSearch.find(el => el.matches('.theme-section'));
   const entry = afterSearch.find(el => el.matches('.animation-duration-settings'));
-  // These settings sections must be located using stable, untranslated identifiers.
-  // locales.js translates aria-labels and headings; relying on their visible text here
-  // caused the grid/appearance sections to be missed when Spanish/French/German loaded
-  // before DOMContentLoaded. The data-settings-section attributes are never translated.
-  const directChildren = Array.from(panel.children);
-  const grid = directChildren.find(el => el.matches('.dial-settings') && (
-    el.dataset.settingsSection === 'grid' || el.querySelector('#dial-columns')
+  // Identify the grid-layout section by stable translation keys first, then by
+  // its accessible label/heading. The previous Portuguese-only text match could
+  // fail in other interface languages, causing the grid section to be appended
+  // as a leftover after Dial appearance.
+  const grid = [...afterSearch, ...beforeSearch].find(el => el.matches('.dial-settings') && (
+    el.dataset.i18n === 'Dial grid layout' ||
+    el.getAttribute('aria-label') === 'Layout da grelha de dials' ||
+    el.getAttribute('aria-label') === 'Dial grid layout' ||
+    el.querySelector('.settings-heading')?.dataset.i18n === 'Dial grid layout' ||
+    /^(Dial grid layout|Layout da grelha de dials|Grid layout)$/i.test(el.querySelector('.settings-heading')?.textContent?.trim() || '')
   ));
-  const appearance = directChildren.find(el => el.matches('.dial-settings') && (
-    el.dataset.settingsSection === 'appearance' || el.querySelector('#dial-shape')
-  ));
+  const appearance = afterSearch.find(el => el.matches('.dial-settings') && (el.getAttribute('aria-label') === 'Aparência dos dials' || el.getAttribute('aria-label') === 'Dial appearance' || el.querySelector('.settings-heading')?.textContent?.includes('Aparência dos dials') || el.querySelector('.settings-heading')?.dataset.i18n === 'Dial appearance')) || Array.from(panel.children).find(el => el.matches('.dial-settings') && (el.getAttribute('aria-label') === 'Aparência dos dials' || el.getAttribute('aria-label') === 'Dial appearance' || el.querySelector('.settings-heading')?.dataset.i18n === 'Dial appearance'));
   const clock = afterSearch.find(el => el.matches('.clock-settings'));
   const button = afterSearch.find(el => el.matches('.button-settings'));
   const separators = afterSearch.filter(el => el.matches('.separator-settings'));
-  const pro = beforeSearch.find(el => el.matches('.general-utilities-section'));
-  // The Extension settings label is authored directly in newtab.html and translated via data-i18n.
 
   const layout = document.createElement('div'); layout.className = 'settings-tabs-layout';
   const nav = document.createElement('div'); nav.className = 'settings-tabs-nav'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','Settings categories');
@@ -2388,13 +2349,8 @@ function setupSettingsTabs() {
   // Language lives at the bottom of the sidebar, separate from the tab buttons.
   const oldUtilityRow = panel.querySelector(':scope > .top-utility-controls');
   if (oldUtilityRow) oldUtilityRow.remove();
-  if (bookmarkTop && pro && !pro.contains(bookmarkTop)) {
-    pro.appendChild(bookmarkTop);
-    bookmarkTop.classList.add('pro-bookmark-import-row');
-  }
 
   const definitions = [
-    {id:'pro', label:'General settings', icon:'⚙️', items:[pro]},
     {id:'searchbar', label:'Search bar', icon:'⌕', items:[searchbar]},
     {id:'background', label:'Page background', icon:'🖼️', items:[background]},
     {id:'grid', label:'Dials grid and appearance', icon:'▦', items:[grid, appearance]},
@@ -2405,10 +2361,11 @@ function setupSettingsTabs() {
     {id:'separators', label:'Separators', icon:'━', items:separators}
   ].map(d => ({...d, items:d.items.filter(Boolean)})).filter(d=>d.items.length);
 
-  // Keep general import/export utilities in the General settings tab.
+  // Keep Extension settings (Export/Import) inside the Pro section, above its other controls.
+  // The row is authored in newtab.html; do not move it into the sidebar navigation.
 
   // Put all settings sections into their tab panels; settings are applied and saved in real time.
-  const used = new Set([searchSection, layout, oldUtilityRow, languageTop, bookmarkTop].filter(Boolean));
+  const used = new Set([searchSection, layout, oldUtilityRow, languageTop].filter(Boolean));
   definitions.forEach((d, i) => {
     const btn = document.createElement('button'); btn.type='button'; btn.className='settings-tab';
     btn.id=`settings-tab-${d.id}`; btn.setAttribute('role','tab'); btn.setAttribute('aria-controls',`settings-tab-panel-${d.id}`);
@@ -2431,13 +2388,12 @@ function setupSettingsTabs() {
     languageTop.removeAttribute('style');
     nav.appendChild(languageTop);
   }
-  // Use a stable, viewport-bounded settings layout. Measuring translated text
-  // and changing grid widths on each language mutation caused layout thrashing
-  // and could make the nav/content tracks disagree with the drawer width.
+  // Keep the drawer and tabs aligned independently of translated label length.
+  // Labels wrap instead of resizing the drawer, preventing locale-switch overlap.
   const resizeSettingsForTabLabels = () => {
     const viewportWidth = Math.max(320, document.documentElement.clientWidth || window.innerWidth || 320);
     const drawerWidth = Math.min(600, Math.max(340, viewportWidth - 28));
-    const navWidth = Math.min(230, Math.max(160, Math.floor(drawerWidth * 0.27)));
+    const navWidth = Math.min(200, Math.max(132, Math.floor(drawerWidth * 0.27)));
     panel.style.setProperty('--settings-nav-width', `${navWidth}px`);
     panel.style.setProperty('--settings-panel-width', `${drawerWidth}px`);
     panel.style.setProperty('--settings-drawer-inner-width', `${Math.max(280, drawerWidth - 28)}px`);
@@ -2445,9 +2401,7 @@ function setupSettingsTabs() {
   resizeSettingsForTabLabels();
   if (!nav.dataset.dynamicWidthObserver) {
     nav.dataset.dynamicWidthObserver = 'true';
-    document.getElementById('language-select')?.addEventListener('change', () => {
-      requestAnimationFrame(resizeSettingsForTabLabels);
-    });
+    document.getElementById('language-select')?.addEventListener('change', () => requestAnimationFrame(resizeSettingsForTabLabels));
     window.addEventListener('resize', resizeSettingsForTabLabels);
   }
   function activate(id){
@@ -2524,11 +2478,3 @@ if (document.readyState === 'loading') {
   setupSettingsSearch();
 }
 
-// Preset cards are selectable placeholders; applying saved layouts will be added later.
-document.querySelectorAll('.preset-card[data-preset]').forEach((card) => {
-  card.addEventListener('click', () => {
-    document.querySelectorAll('.preset-card[data-preset]').forEach((item) => {
-      item.setAttribute('aria-pressed', String(item === card));
-    });
-  });
-});
